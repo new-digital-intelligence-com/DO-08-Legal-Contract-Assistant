@@ -1,0 +1,36 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ndi-legal",
+  "owner": {
+    "name": "New Digital Intelligence",
+    "url": "https://new-digital-intelligence.com"
+  },
+  "description": "NDI's Legal Contract Assistant plugin for Claude Code and the Claude app, installable straight from this repo.",
+  "plugins": [
+    {
+      "name": "do-08-contract-review",
+      "source": "./plugins/do-08-contract-review",
+      "displayName": "DO-08 — Legal Contract Assistant",
+      "description": "Review and draft contracts, flag risky or non-standard clauses against the house playbook, answer policy and compliance questions, and suggest fallback language and redlines. Every position it takes is a proposal awaiting sign-off by qualified counsel. It signs nothing and files nothing.",
+      "author": {
+        "name": "New Digital Intelligence"
+      },
+      "category": "legal",
+      "keywords": [
+        "contract-review",
+        "legal",
+        "redlines",
+        "nda",
+        "saas-agreement",
+        "msa",
+        "risk-analysis",
+        "clause-extraction",
+        "negotiation",
+        "compliance",
+        "google-drive",
+        "ndi",
+        "do-08"
+      ]
+    }
+  ]
+}

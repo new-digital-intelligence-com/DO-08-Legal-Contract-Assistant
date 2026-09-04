@@ -1,0 +1,27 @@
+# The local register and the contract blobs. Drive holds the durable copy;
+# this is the working one, and it is nobody else's business.
+.data/
+
+# Generated contract corpus — rebuilt with `npm run fixtures`.
+/fixtures/contracts/
+
+# node / next.js
+/node_modules
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+
+# Local env files. .env.example stays tracked; .env.local holds a live
+# Anthropic key, a Google client secret and a Drive refresh token.
+.env
+.env.local
+.env.*.local
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+/coverage

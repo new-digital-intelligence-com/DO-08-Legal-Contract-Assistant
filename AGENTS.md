@@ -1,0 +1,91 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
+
+# DO-08 — conventions
+
+## The one rule
+
+**No code path sets a `SignOff` to anything but `pending`.** The only way a
+position leaves `pending` is `signOff()` in `src/lib/review.ts`, which requires a
+named person and a note and writes both to the audit trail. If you find yourself
+adding a second path, you are removing the product.
+
+The same holds in the plugin's skills: they propose, they never approve, and
+they never tell anybody a contract is fine to sign.
+
+## Two surfaces, one set of rules
+
+- **The console** (`src/`) — a Next.js app that reviews through the Anthropic
+  API and keeps the register, the sign-off queue, the audit trail and the
+  editable playbook.
+- **The skills** (`plugins/do-08-contract-review/skills/`) — self-contained
+  Agent Skills. They read a PDF attached in Claude and review it there, with no
+  server, no key and no connector. Everything they need to judge a contract is
+  in their own reference files.
+
+They are independent. Neither calls the other. The house playbook exists in both
+(`src/lib/standards.ts` seeds and
+`skills/contract-review/references/playbook.md`) and the two must be changed
+together — that duplication is deliberate, because the skills have to work with
+nothing running, but it is the one place this repo can drift.
+
+## The model layer is capability-aware
+
+`src/lib/anthropic.ts` resolves `MODEL_TRAITS` from the model id and assembles
+request parameters from them. This is not defensive coding — the families reject
+each other's parameters outright:
+
+| | Haiku 4.5 and older | Opus 5 / the 4.6+ family |
+|---|---|---|
+| `output_config.effort` | 400 | required for effort control |
+| `thinking: {type:"adaptive"}` | 400 | the only on-mode |
+| `thinking: {budget_tokens}` | the only on-mode | 400 |
+| `temperature` | accepted | 400 |
+| PDF pages | 100 (200K context) | 600 |
+
+Never call `anthropic.messages.*` directly from a feature module. Go through
+`readDocument`, `readText` or `complete`, which already handle the split.
+Switching `ANTHROPIC_MODEL` between Haiku and Opus must stay a one-line edit.
+
+## Local-first store, Drive as the mirror
+
+`src/lib/store.ts` writes to `.data/` first and mirrors to Drive's `state/`.
+Reads never touch the network. That is a deliberate departure from DO-09, which
+put its register on Drive alone: this app is pointed at a folder somebody else
+owns, so Drive is unreachable until a person has been through a consent screen,
+and a Drive-only register would mean an app that does nothing at all until then.
+
+The honesty requirement that comes with it: a `DriveRef` is only ever
+constructed from an id a Drive write actually returned. If it is absent, the UI
+says "kept locally, not yet on Drive" — never a tick over an empty folder.
+
+## Absence is never zero
+
+The rule that shapes the error handling throughout. A review that failed, a
+document that could not be read, a folder that was never synced and a list that
+was truncated are four different states, and none of them is "nothing found".
+`failed()` in `src/lib/http.ts` never degrades to an empty success, `useApi` in
+`src/components/api.ts` returns error and empty as distinguishable states, and
+every panel branches on all three.
+
+## Style
+
+Comments explain *why*, and especially why the obvious approach is wrong. A
+file-level block comment on every module. British spelling in prose. Em dashes.
+No emoji, no TODOs, no placeholder implementations.
+
+## Checks
+
+```bash
+npx tsc --noEmit     # must be clean
+npm run build        # must be clean
+npm run smoke        # preflight: env, a live model call, Drive, fixtures
+npm run fixtures     # rebuild the eight test contracts
+```

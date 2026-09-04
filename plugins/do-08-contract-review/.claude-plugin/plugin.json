@@ -1,0 +1,24 @@
+{
+  "name": "do-08-contract-review",
+  "displayName": "DO-08 — Legal Contract Assistant",
+  "description": "NDI's DO-08 AI Employee. Reviews and drafts contracts against a house playbook, flags risky and non-standard clauses with the clause reference and the quoted text, suggests fallback language and redlines, answers policy and compliance questions from the workspace, and routes every contract position to a qualified lawyer for sign-off. Nothing it produces is legal advice, and it never signs, executes or sends an agreement.",
+  "author": {
+    "name": "New Digital Intelligence"
+  },
+  "repository": "https://github.com/new-digital-intelligence-com/DO-08-Legal-Contract-Assistant",
+  "license": "UNLICENSED",
+  "keywords": [
+    "contract-review",
+    "legal",
+    "redlines",
+    "nda",
+    "saas-agreement",
+    "msa",
+    "m-and-a",
+    "risk-analysis",
+    "negotiation",
+    "compliance",
+    "ndi",
+    "do-08"
+  ]
+}

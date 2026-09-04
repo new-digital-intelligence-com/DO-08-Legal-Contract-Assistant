@@ -1,0 +1,137 @@
+{
+  "contracts": [
+    {
+      "filename": "saas-vendor-favourable.pdf",
+      "title": "Cloudform Subscription Agreement",
+      "contractType": "saas",
+      "position": "customer",
+      "pages": 2,
+      "bytes": 8650,
+      "sha256": "9b0e287010fe3a0467e3d0b0f180f28d1b06742fc2dc949cf70b6a20adb27ba8",
+      "contains": [
+        "Liability cap of 3 months' fees (Section 10.2) — under the 6-month red-flag line",
+        "Unilateral amendment by posting (Section 14.1)",
+        "Auto-renewal with a 90-day notice window (Section 8.2)",
+        "Vendor-only termination for convenience on 30 days (Section 8.5)",
+        "No data export right on termination",
+        "Immediate suspension at sole discretion (Section 6.3)",
+        "Asymmetric assignment (Section 15.2)"
+      ]
+    },
+    {
+      "filename": "mutual-nda-balanced.pdf",
+      "title": "Mutual Non-Disclosure Agreement",
+      "contractType": "nda",
+      "position": "receiving-party",
+      "pages": 2,
+      "bytes": 8651,
+      "sha256": "84eeaa658faf1dbd4ab75e3d9ee80d4d2bbda7aff33aa419f9a7eb6c62a8199a",
+      "contains": [
+        "Genuinely balanced — most provisions should come back acceptable",
+        "3-year term with an indefinite trade-secret carve-out (Section 4)",
+        "Mutual non-solicit, 12 months, contact-based, advertising carved out (Section 7)",
+        "Compelled disclosure with notice and time to seek protection (Section 5.2)"
+      ]
+    },
+    {
+      "filename": "nda-broad-residuals.pdf",
+      "title": "Confidentiality Agreement (one-way)",
+      "contractType": "nda",
+      "position": "disclosing-party",
+      "pages": 2,
+      "bytes": 6062,
+      "sha256": "d71a32bd8e89d4c8f6c43455ff4a263168e923f8651446a9dfc24a098056ae8d",
+      "contains": [
+        "Seven-year confidentiality term (Section 3) — above the 5-year red-flag line",
+        "One-way residuals clause favouring the recipient (Section 4.3)",
+        "No destruction certification (Section 5)",
+        "No notice requirement on compelled disclosure (Section 6)",
+        "One-way agreement where both sides will in fact disclose"
+      ]
+    },
+    {
+      "filename": "msa-uncapped-indemnity.pdf",
+      "title": "Master Services Agreement",
+      "contractType": "msa",
+      "position": "customer",
+      "pages": 2,
+      "bytes": 6943,
+      "sha256": "753e10e14676c8476771674a00ba7afc67421a916cb92d92818a5c6202d886dd",
+      "contains": [
+        "Uncapped customer indemnity (Section 9.1) carved out of the cap",
+        "Cap carve-out for 'breach of this Agreement' which voids the cap (Section 8.3)",
+        "Broken cross-reference: Section 5.2 cites Exhibit C, which does not exist",
+        "'Confidential Information' used in Section 7 but never defined",
+        "Audit rights at Customer's cost regardless of outcome (Section 11.2)"
+      ]
+    },
+    {
+      "filename": "employment-california-noncompete.pdf",
+      "title": "Employment Agreement",
+      "contractType": "employment",
+      "position": "employee",
+      "pages": 2,
+      "bytes": 6448,
+      "sha256": "2dd1d0b47ce0fb8d8bfe21d08670dff022a7ac9f2d4f5d3cc22e0b6eadf835ed",
+      "contains": [
+        "Three-year nationwide non-compete (Section 8.1) governed by California law — void under Cal. B&P Code 16600",
+        "No-hire covering all employees regardless of contact (Section 8.2)",
+        "IP assignment with no carve-out for prior inventions (Section 6.1)",
+        "Bonus entirely discretionary despite being described as part of compensation (Section 3.2)",
+        "Fee blank: base salary shown as $______ (Section 3.1)"
+      ]
+    },
+    {
+      "filename": "merchant-rolling-reserve.pdf",
+      "title": "Payment Processing Agreement",
+      "contractType": "merchant",
+      "position": "customer",
+      "pages": 2,
+      "bytes": 7313,
+      "sha256": "d38153723c5bbd87f16caac0da31fa2d3f48965cafe3f552e0db2764c476e2c5",
+      "contains": [
+        "Rolling reserve at processor's sole discretion, no release condition (Section 5.1)",
+        "Immediate suspension and fund-holding on risk grounds (Section 6.2)",
+        "Network rules incorporated by reference with no copy provided (Section 2.3)",
+        "Auto-debit of any amount owed with no notice (Section 4.4)",
+        "Unlimited chargeback liability including fraud (Section 7.1)",
+        "180-day termination tail on reserves (Section 9.3)"
+      ]
+    },
+    {
+      "filename": "purchase-agreement-earnout.pdf",
+      "title": "Stock Purchase Agreement (extract)",
+      "contractType": "ma",
+      "position": "seller",
+      "pages": 2,
+      "bytes": 6972,
+      "sha256": "63cebb69fd933a29821f39511e91698012462ba4545dc7fe02f185ba946d5d6f",
+      "contains": [
+        "36-month general rep survival (Section 8.1) — above the 24-30 month marginal band",
+        "25% escrow for 24 months (Section 2.4) — above the 20% red-flag line",
+        "Earnout measured at Buyer's sole discretion with no operating covenants (Section 3.2)",
+        "No acceleration of earnout on breach or on sale of the business",
+        "Anti-sandbagging clause reducing seller protection (Section 8.5)",
+        "Founder employment compensation counted against the purchase price (Section 3.4)"
+      ]
+    },
+    {
+      "filename": "draft-incomplete-services.pdf",
+      "title": "Services Agreement (DRAFT)",
+      "contractType": "services",
+      "position": "customer",
+      "pages": 2,
+      "bytes": 5324,
+      "sha256": "e758c780b6693ff598ff318ad23bc14f3b2bcfbb909c6105f4c29451790b3bec",
+      "contains": [
+        "Fee stated as $______ (Section 4.1)",
+        "Term stated as TBD (Section 3.1)",
+        "Governing law left as [JURISDICTION] (Section 12.1)",
+        "Exhibit B referenced (Section 2.2) but not attached",
+        "Notice address left blank (Section 11.1)",
+        "No signature block — the document is unexecuted",
+        "Liability cap left as [__] months (Section 8.2)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,227 @@
+@import "tailwindcss";
+
+/*
+  DO-09 design tokens.
+
+  Three decisions shape everything below.
+
+  1. Semantic tokens, not raw colours. Every colour is a CSS variable defined
+     once, so a component writes `bg-surface text-ink` rather than a hex value.
+     Changing the palette is one edit here rather than four hundred across the
+     class attributes.
+
+     This app is light, and only light. It is read side by side with scanned
+     documents, and a PDF renders on white whatever the surrounding chrome
+     does — a dark shell around a white page is the worst of both. There is no
+     dark theme and no toggle to find.
+
+  2. NDI red is identity and alarm, never chrome. It marks the logo, the active
+     section, the focus ring and a high-severity flag. It is deliberately NOT
+     the primary button — that is near-black — so the one red thing on a screen
+     is the thing that matters. A red button next to a red flag makes neither
+     legible.
+
+  3. Density is a feature. This is a tool for reading four hundred rows of
+     figures, not a marketing page. Hairline borders, 36px table rows, tabular
+     numerals everywhere, and one soft shadow reserved for things that float.
+*/
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces — a warm-neutral ramp, not pure grey. */
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --elevated: #ffffff;
+  --sunken: #f4f4f2;
+
+  /* Hairlines. `strong` is hover and active, never a default. */
+  --border: #e6e6e2;
+  --border-strong: #d2d2cc;
+
+  /* Text ramp. Three steps is enough; a fourth becomes illegible. */
+  --ink: #16161a;
+  --ink-2: #5c5c66;
+  --ink-3: #8e8e99;
+
+  /* Brand. Sampled from the NDI logo: pure red on black and white. */
+  --brand: #fe0100;
+  --brand-ink: #c40100;
+  --brand-soft: #fff1f0;
+  --brand-line: #ffd0cd;
+
+  /* The primary action. Neutral on purpose — see note 2 above. */
+  --solid: #16161a;
+  --solid-hover: #2c2c33;
+  --solid-ink: #ffffff;
+
+  --focus: #fe0100;
+
+  /* Status. Every one of these is paired with a word in the UI, never used
+     alone — telling "accepted" from "open" by hue is how a flag gets missed. */
+  --ok-bg: #edfaf1;
+  --ok-ink: #0a6b3c;
+  --ok-line: #b6e6c9;
+
+  --warn-bg: #fdf6e6;
+  --warn-ink: #8a5a06;
+  --warn-line: #f2dca6;
+
+  --crit-bg: #fef1f0;
+  --crit-ink: #b21b13;
+  --crit-line: #f8c4bf;
+
+  --info-bg: #eef4fe;
+  --info-ink: #1d4ed8;
+  --info-line: #c5d8fb;
+
+  --neutral-bg: #f2f2f0;
+  --neutral-ink: #62626c;
+  --neutral-line: #e0e0dc;
+
+  --shadow-pop: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 32px -8px rgb(0 0 0 / 0.14);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.03);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-sunken: var(--sunken);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-line: var(--brand-line);
+
+  --color-solid: var(--solid);
+  --color-solid-hover: var(--solid-hover);
+  --color-solid-ink: var(--solid-ink);
+
+  --color-ok-bg: var(--ok-bg);
+  --color-ok-ink: var(--ok-ink);
+  --color-ok-line: var(--ok-line);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --color-warn-line: var(--warn-line);
+  --color-crit-bg: var(--crit-bg);
+  --color-crit-ink: var(--crit-ink);
+  --color-crit-line: var(--crit-line);
+  --color-info-bg: var(--info-bg);
+  --color-info-ink: var(--info-ink);
+  --color-info-line: var(--info-line);
+  --color-neutral-bg: var(--neutral-bg);
+  --color-neutral-ink: var(--neutral-ink);
+  --color-neutral-line: var(--neutral-line);
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Headings run tighter than body text; at 24px and up the default tracking
+   reads loose and slightly amateur. */
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--brand);
+  color: #fff;
+}
+
+/*
+  One focus style, applied by :focus-visible only.
+
+  A ring on every click is noise; a ring on no keyboard focus is a screen
+  nobody can navigate without a mouse. `:focus-visible` is the line between
+  those, and the browser draws it better than we can guess.
+*/
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/*
+  Tabular figures on every count, amount and date.
+
+  Columns of proportional numerals jitter as values change, which makes a
+  column of money genuinely harder to scan and easier to misread — and a
+  misread figure here ends up on a tax form.
+*/
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Scrollbars, so a dense table does not carry a chunky OS bar through it. */
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+@keyframes do09-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.skeleton {
+  background: var(--sunken);
+  animation: do09-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes do09-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation: do09-rise 160ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+  The logo.
+
+  The PNG has a white ground, and `multiply` drops it cleanly on the light
+  surfaces this app uses everywhere.
+*/
+.logo {
+  mix-blend-mode: multiply;
+}
