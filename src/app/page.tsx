@@ -62,7 +62,9 @@ export default function Console() {
       <header className="mb-6 flex items-center gap-3">
         <Image src="/logo.png" alt="" width={30} height={30} className="logo" priority />
         <div>
-          <h1 className="text-[19px] font-semibold">Contract review</h1>
+          <h1 className="text-[19px] font-semibold">
+            DO-08 <span className="text-ink-3">—</span> Legal Contract Assistant
+          </h1>
           <p className="text-[12.5px] text-ink-3">
             Upload an agreement and read what it costs you. A lawyer signs off every position.
           </p>
