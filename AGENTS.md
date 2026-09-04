@@ -54,17 +54,25 @@ Never call `anthropic.messages.*` directly from a feature module. Go through
 `readDocument`, `readText` or `complete`, which already handle the split.
 Switching `ANTHROPIC_MODEL` between Haiku and Opus must stay a one-line edit.
 
-## Local-first store, Drive as the mirror
+## Drive is the only store
 
-`src/lib/store.ts` writes to `.data/` first and mirrors to Drive's `state/`.
-Reads never touch the network. That is a deliberate departure from DO-09, which
-put its register on Drive alone: this app is pointed at a folder somebody else
-owns, so Drive is unreachable until a person has been through a consent screen,
-and a Drive-only register would mean an app that does nothing at all until then.
+`src/lib/store.ts` reads and writes `state/` on Drive. There is no `.data/`, no
+local cache of the register, and no fallback. An earlier version mirrored a
+local copy up and it was wrong: two copies drift, and the one a person is
+looking at is then not necessarily the one the shared folder holds.
 
-The honesty requirement that comes with it: a `DriveRef` is only ever
-constructed from an id a Drive write actually returned. If it is absent, the UI
-says "kept locally, not yet on Drive" — never a tick over an empty folder.
+Consequences to hold on to:
+
+- **The app does nothing until Drive is connected.** `readStore` throws rather
+  than returning the fallback, so a caller can never mistake an outage for an
+  empty register.
+- **`/api/status` returns `workspace: null` when Drive is unreachable**, never a
+  set of zeros, and the Overview renders that as a stated unknown.
+- **A `DriveRef` is only ever built from an id a write returned.** `ingest`
+  uploads before it writes the register row and fails the whole operation if the
+  upload fails, so a row can never claim a file that is not there.
+- The eight-second read cache in `store.ts` is a debounce, not a store. Any
+  write from this process drops the entry immediately.
 
 ## Absence is never zero
 
@@ -87,5 +95,6 @@ No emoji, no TODOs, no placeholder implementations.
 npx tsc --noEmit     # must be clean
 npm run build        # must be clean
 npm run smoke        # preflight: env, a live model call, Drive, fixtures
-npm run fixtures     # rebuild the eight test contracts
+npm run fixtures     # rebuild the eight short test contracts
+npm run sample       # rebuild sample-contract.pdf, the full agreement
 ```

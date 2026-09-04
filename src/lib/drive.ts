@@ -70,6 +70,21 @@ export function driveEnv() {
   };
 }
 
+/**
+ * Thrown when the workspace folder cannot be reached.
+ *
+ * A distinct class rather than a plain Error because the HTTP layer has to tell
+ * this apart from a bug. Drive not being connected is a configuration state a
+ * person can fix in a minute — it answers 503 with the instruction — whereas a
+ * 500 tells them something is broken and sends them looking for a stack trace.
+ */
+export class WorkspaceUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "WorkspaceUnavailableError";
+  }
+}
+
 export type DriveState = "ready" | "needs-consent" | "unconfigured";
 
 /**
@@ -85,8 +100,8 @@ export function driveStatus(): { state: DriveState; detail: string } {
       state: "unconfigured",
       detail:
         "GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_DRIVE_FOLDER_ID are not all set in " +
-        ".env.local. Contracts are still reviewed and kept locally; nothing is mirrored to Drive " +
-        "until this is filled in.",
+        ".env.local. This app stores everything in the workspace folder and keeps nothing on this " +
+        "machine, so it cannot read or write anything until these are filled in.",
     };
   }
   if (!env.refreshToken) {
@@ -184,7 +199,7 @@ let cachedToken: { value: string; expiresAt: number } | null = null;
 
 export async function accessToken(): Promise<string> {
   const status = driveStatus();
-  if (status.state !== "ready") throw new Error(status.detail);
+  if (status.state !== "ready") throw new WorkspaceUnavailableError(status.detail);
 
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000) return cachedToken.value;
 

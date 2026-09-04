@@ -174,14 +174,15 @@ export type Contract = {
   latestReviewId?: string;
   reviewCount: number;
 
-  /** The PDF in the shared Drive folder's `input/`. Absent until Drive has it. */
-  input?: DriveRef;
   /**
-   * Bytes are kept locally too. Drive is the durable copy; this is what a
-   * re-review reads so the app is not one network failure away from being
-   * unable to look at a contract it already has.
+   * The PDF in the workspace folder's `input/`.
+   *
+   * Optional in the type and always present in practice: `ingest` uploads
+   * before it writes the register row and fails the whole operation if the
+   * upload fails, so a row without one means a register written by an older
+   * version. Readers check it and say so rather than assuming.
    */
-  localPath?: string;
+  input?: DriveRef;
 };
 
 /* ────────────────────────────────────────────────────────────────────────────

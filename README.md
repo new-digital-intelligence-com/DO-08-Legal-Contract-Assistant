@@ -52,10 +52,15 @@ keep: a register of every contract, a sign-off queue, an audit trail, an
 editable playbook, and filing to a shared Google Drive folder.
 
 ```bash
-cp .env.example .env.local     # fill in ANTHROPIC_API_KEY
+cp .env.example .env.local     # fill in ANTHROPIC_API_KEY and the GOOGLE_* values
 npm install
-npm run dev
+npm run dev                    # then connect Drive once, see below
 ```
+
+**The console stores nothing on this machine.** Contracts, reviews and the
+register all live in the Drive folder, so the app cannot read or write anything
+until Drive is connected — it says exactly that rather than showing an empty
+workspace.
 
 Use the skills when you are reading one contract and want an answer now. Use the
 console when the answer has to be kept — when a lawyer signs off each position,
@@ -72,7 +77,7 @@ or when somebody will ask in six months who accepted a clause.
 | `REVIEWER_EMAIL` | Who the app acts as. Every audit row is attributed to it. |
 | `LEGAL_EMAIL` | Counsel who signs off. Should not be the same person as the reviewer. |
 | `ORG_NAME` | Appears on every review header. |
-| `GOOGLE_*` | The Drive workspace. Optional — see below. |
+| `GOOGLE_*` | The Drive workspace. **Required** — it is the only storage. See below. |
 
 Check it before you start:
 
@@ -119,10 +124,16 @@ clear.
 So `probeFolder()` resolves the ambiguity explicitly before anything downstream
 is allowed to believe an empty result.
 
-**Until consent is granted the app still works.** Contracts are stored and
-reviewed locally, and the console says so plainly rather than showing a tick
-over an empty folder. **Push local files to Drive** on the Overview screen sends
-the backlog up afterwards.
+**Until consent is granted the console does nothing**, and says so. There is no
+local store to fall back on: that was a deliberate change, because two copies of
+a register drift, and a lawyer opening the shared folder and a lawyer opening
+this console have to be reading the same thing. The only way to guarantee that
+is to have one copy.
+
+The same principle governs the failure case. When the folder cannot be reached
+the Overview shows the register as **unknown**, never as zero — "no contracts"
+and "I cannot see the folder" are different claims, and only one of them means
+the queue is clear.
 
 ---
 
@@ -163,10 +174,23 @@ confidently as a correct one.
 ## The test corpus
 
 ```bash
-npm run fixtures
+npm run sample      # one full-length agreement, at sample-contract.pdf
+npm run fixtures    # eight short probes, at fixtures/contracts/
 ```
 
-Writes eight real, openable contract PDFs to `fixtures/contracts/`, each built
+`npm run sample` writes **`sample-contract.pdf`** to the repository root: a
+five-page Master Subscription Agreement of the kind that actually lands in a
+legal inbox — recitals, a definitions article, sixteen numbered sections, an
+exhibit and a signature block. It is built to contain 22 findable things, and
+the script prints the list when it runs. Upload it as the **customer**.
+
+Two of them are the ones that matter: Section 11.4 carves "any breach of this
+Agreement by Customer" out of the liability cap, which quietly voids the cap
+three clauses above it; and Section 9.4 grants a perpetual licence to train
+models on Customer Data, surviving termination. A review that misses those has
+missed the point of reading the document.
+
+`npm run fixtures` writes eight shorter, openable contract PDFs to `fixtures/contracts/`, each built
 to contain specific known problems that `fixtures/manifest.json` records. That
 is what makes it a test corpus rather than eight documents: a review of
 `saas-vendor-favourable.pdf` that does not flag the three-month cap is a
@@ -192,11 +216,13 @@ source bytes.
 ## Layout
 
 ```
+sample-contract.pdf   a full agreement to upload by hand and test with
+
 src/lib/
   types.ts        the domain model — everything else agrees on it
   anthropic.ts    the model layer, capability-aware per model family
   drive.ts        Google Drive over REST, with the scope note above
-  store.ts        local-first register, Drive as the durable mirror
+  store.ts        the register, on Drive and nowhere else
   contracts.ts    intake, the register, workspace status
   outputs.ts      the only writer to Drive input/ and output/
   schemas.ts      the Zod shapes the model may answer in
@@ -207,7 +233,7 @@ src/lib/
   ask.ts          policy questions, answered from the workspace only
   audit.ts        the append-only trail
 
-src/app/api/      17 routes
+src/app/api/      16 routes
 src/components/   the console
 plugins/          the Claude plugin and its three skills
 scripts/          fixtures, smoke test
@@ -225,11 +251,18 @@ scripts/          fixtures, smoke test
 - **Page and size ceilings.** 100 pages and 20 MB per contract on Haiku 4.5;
   600 pages on the 1M-context models. Checked at upload so a long agreement
   fails with a sentence rather than as an API error after the fact.
+- **Drive is a hard dependency.** Nothing is stored locally, so an unreachable
+  folder means the console can do nothing at all. That is the cost of having one
+  copy of the register rather than two that can disagree.
 - **Single-process store.** The write queue in `store.ts` serialises
-  read-modify-write within one running server. It does not protect against two
-  processes on the same `.data/` directory, and a hosted deployment with
-  concurrent instances can lose a row. Accepted, not solved — and stated here
-  rather than discovered.
+  read-modify-write within one running server. It cannot protect against a
+  second process writing the same folder, and nothing in a
+  folder-of-JSON-files design can — Drive offers nothing to build a lock from.
+  A hosted deployment with concurrent instances can lose a row. Accepted, not
+  solved, and stated here rather than discovered.
+- **A round trip per read.** Every page load asks Drive. An eight-second read
+  cache keeps one screen from asking the same question four times, but the app
+  is slower than a local store would be. That is the trade.
 - **The playbook exists in two copies.** The console's is editable at runtime;
   the plugin's is what the skills read. Change one, change the other.
 - **Reviews are not re-run automatically.** A standard changed today does not

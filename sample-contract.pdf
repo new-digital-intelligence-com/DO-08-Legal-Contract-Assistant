@@ -1,0 +1,353 @@
+%PDF-1.4
+%ту╧╙
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 5 /Kids [7 0 R 9 0 R 11 0 R 13 0 R 15 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Producer (DO-09 fixture generator, src/lib/pdf-lite.mjs) /Creator (DO-09 Tax Document Preparation Assistant) /CreationDate (D:20250401120000Z) >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+8 0 obj
+<< /Length 5868 >>
+stream
+BT 1 Tc /F2 13 Tf 0.09 0.09 0.1 rg 184.3 720 Td (MASTER SUBSCRIPTION AGREEMENT) Tj ET BT 0 Tc ET
+BT /F1 9 Tf 0.36 0.36 0.4 rg 203.21 700 Td (Helix Data Systems, Inc. and Northwind Studio LLC) Tj ET
+0.6 w 0.8 0.8 0.82 RG 64 684 m 548 684 l S
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 668 Td (This Master Subscription Agreement \(this "Agreement"\) is entered into as of 12 January 2026 \(the "Effective Date"\)) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 655 Td (by and between Helix Data Systems, Inc., a Delaware corporation with its principal place of business at 400) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 642 Td (Sansome Street, San Francisco, California \("Vendor"\), and Northwind Studio LLC, a California limited liability) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 629 Td (company with its principal place of business at 1100 Bryant Street, San Francisco, California \("Customer"\). Vendor) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 616 Td (and Customer are each a "Party" and together the "Parties".) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 599 Td (WHEREAS Vendor operates a hosted data-integration platform; and WHEREAS Customer wishes to subscribe to) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 586 Td (that platform on the terms set out below; NOW THEREFORE, in consideration of the mutual covenants contained) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 573 Td (herein, the Parties agree as follows.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 548 Td (1. DEFINITIONS) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 540 m 548 540 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 522 Td (1.1   Affiliate.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 125.25 522 Td (any entity that controls, is controlled by, or is under common control with a Party, where control) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 509 Td (means ownership of more than fifty percent \(50%\) of the voting interests.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 490 Td (1.2   Confidential Information.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 200.19 490 Td (all non-public information disclosed by one Party to the other, whether orally or in) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 477 Td (writing, that is designated as confidential or that a reasonable person would understand to be confidential given its) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 464 Td (nature and the circumstances of disclosure.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 445 Td (1.3   Customer Data.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 157.97 445 Td (all data, content and materials submitted to or processed by the Services by or on behalf of) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 432 Td (Customer.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 413 Td (1.4   Documentation.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 159.55 413 Td (Vendor's then-current technical documentation for the Services made available at) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 400 Td (docs.helixdata.example.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 381 Td (1.5   Order Form.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 142.67 381 Td (an ordering document executed by both Parties that references this Agreement and specifies) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 368 Td (the Services, the fees and the Subscription Term.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 349 Td (1.6   Services.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 129.49 349 Td (the hosted software platform identified in an Order Form, together with any updates Vendor makes) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 336 Td (generally available.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 317 Td (1.7   Subscription Term.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 174.34 317 Td (the period specified in an Order Form during which Customer is entitled to access the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 304 Td (Services.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 279 Td (2. PROVISION OF THE SERVICES) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 271 m 548 271 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 253 Td (2.1   Access.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 123.68 253 Td (Subject to Customer's compliance with this Agreement and payment of the applicable fees, Vendor) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 240 Td (grants Customer a non-exclusive, non-transferable right during the Subscription Term to access and use the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 227 Td (Services for Customer's internal business purposes.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 208 Td (2.2   Restrictions.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 145.31 208 Td (Customer shall not: \(a\) resell or sublicense the Services; \(b\) reverse engineer or attempt to) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 195 Td (derive the source code of the Services except to the extent that restriction is prohibited by applicable law; \(c\) use) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 182 Td (the Services to build a competing product; or \(d\) circumvent any usage limits set out in an Order Form.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 163 Td (2.3   Vendor Responsibilities.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 198.63 163 Td (Vendor shall provide the Services in accordance with the Documentation and shall) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 150 Td (not materially decrease the functionality of the Services during a Subscription Term.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 125 Td (3. IMPLEMENTATION AND SUPPORT) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 117 m 548 117 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 99 Td (3.1   Onboarding.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 144.25 99 Td (Vendor shall provide the onboarding assistance described in the applicable Order Form.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 86 Td (Customer shall designate a technical contact and shall ensure that each Authorised User completes Vendor's) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 73 Td (standard onboarding before accessing the Services.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 6230 >>
+stream
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 714 Td (3.2   Support.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 126.82 714 Td (Vendor shall provide support in accordance with the support policy set out in Exhibit B, including the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 701 Td (response targets stated therein.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 682 Td (3.3   Professional Services.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 189.15 682 Td (Any professional services shall be scoped in a separate statement of work and) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 669 Td (charged at Vendor's then-current rates.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 644 Td (4. SUBPROCESSORS AND THIRD PARTIES) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 636 m 548 636 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 618 Td (4.1   Use of Subprocessors.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 191.24 618 Td (Vendor may engage subprocessors to assist in providing the Services, and remains) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 605 Td (responsible for their performance and compliance with this Agreement.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 586 Td (4.2   Current List.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 144.25 586 Td (Vendor maintains a current list of subprocessors in the Documentation.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 567 Td (4.3   Changes.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 130.53 567 Td (Vendor shall give Customer at least thirty \(30\) days' written notice before engaging any new) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 554 Td (subprocessor with access to Customer Data. Customer may object on reasonable data-protection grounds within) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 541 Td (that period, and if the Parties cannot resolve the objection in good faith, Customer may terminate the affected) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 528 Td (Services without penalty and receive a pro-rata refund of prepaid fees.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 509 Td (4.4   Third-Party Integrations.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 198.09 509 Td (The Services may interoperate with third-party products. Vendor is not responsible) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 496 Td (for those products, and Customer's use of them is governed by its own agreements with the relevant providers.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 471 Td (5. TERM AND TERMINATION) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 463 m 548 463 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 445 Td (5.1   Term.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 113.64 445 Td (This Agreement commences on the Effective Date and continues until all Subscription Terms have) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 432 Td (expired or been terminated.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 413 Td (5.2   Termination for Cause.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 191.23 413 Td (Either Party may terminate this Agreement or any Order Form if the other Party) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 400 Td (materially breaches this Agreement and fails to cure that breach within thirty \(30\) days after receiving written notice) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 387 Td (describing it in reasonable detail, provided that the cure period for non-payment shall be ten \(10\) days.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 368 Td (5.3   Termination for Insolvency.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 211.83 368 Td (Either Party may terminate immediately if the other becomes insolvent, makes) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 355 Td (an assignment for the benefit of creditors, or has a receiver appointed over a material part of its assets.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 336 Td (5.4   Survival.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 127.37 336 Td (Sections 1, 9, 11, 12, 13 and 16 survive any termination or expiry of this Agreement.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 311 Td (6. EFFECT OF TERMINATION) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 303 m 548 303 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 285 Td (6.1   Cessation.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 135.81 285 Td (Upon termination or expiry, Customer's right to access the Services ceases.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 266 Td (6.2   Outstanding Fees.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 170.65 266 Td (All fees accrued prior to termination become immediately due. Fees for the remainder of) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 253 Td (a terminated Subscription Term are non-refundable except where Customer terminates under Section 5.2.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 234 Td (6.3   Deletion.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 127.89 234 Td (Vendor shall delete Customer Data from its production systems within ninety \(90\) days of) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 221 Td (termination, save for copies retained in routine backups or as required by law.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 202 Td (6.4   Data Export.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 143.72 202 Td (Customer may request an export of Customer Data within thirty \(30\) days of termination. Vendor) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 189 Td (shall provide the export in a format of Vendor's choosing, and such export shall be charged as a professional) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 176 Td (services engagement at Vendor's then-current rates.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 151 Td (7. FEES AND PAYMENT) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 143 m 548 143 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 125 Td (7.1   Fees.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 112.06 125 Td (Customer shall pay Vendor an annual subscription fee of $__________, invoiced annually in advance.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 112 Td (All fees are stated exclusive of taxes.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 93 Td (7.2   Increases.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 134.24 93 Td (Vendor may increase the fees for any renewal term by giving notice not less than thirty \(30\) days) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 80 Td (before the start of that renewal term, provided that no single increase shall exceed twelve percent \(12%\) of the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 67 Td (fees for the preceding term.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 6279 >>
+stream
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 714 Td (7.3   Renewal.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 128.95 714 Td (Each Subscription Term renews automatically for successive periods of equal length unless either) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 701 Td (Party gives written notice of non-renewal at least seventy-five \(75\) days before the end of the then-current) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 688 Td (Subscription Term.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 669 Td (7.4   Late Payment.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 152.18 669 Td (Undisputed invoices unpaid after thirty \(30\) days accrue interest at one and one-half percent) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 656 Td (\(1.5%\) per month or the maximum rate permitted by law, whichever is lower.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 637 Td (7.5   Disputes.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 130.53 637 Td (Customer may withhold payment of any amount it disputes in good faith, provided it pays the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 624 Td (undisputed balance and notifies Vendor of the basis of the dispute within fifteen \(15\) days of the invoice date.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 599 Td (8. SUSPENSION) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 591 m 548 591 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 573 Td (8.1   For Non-Payment.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 169.58 573 Td (Vendor may suspend the Services if any undisputed invoice remains unpaid more than) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 560 Td (thirty \(30\) days after written notice.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 541 Td (8.2   For Security.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 145.84 541 Td (Vendor may suspend affected components of the Services where continued provision presents) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 528 Td (a material and imminent security risk, and shall restore them as soon as the risk is resolved.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 509 Td (8.3   General.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 125.79 509 Td (Notwithstanding Sections 8.1 and 8.2, Vendor may suspend or limit the Services immediately, in its) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 496 Td (sole discretion, without prior notice and for any reason it deems appropriate. Suspension under this Section does) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 483 Td (not relieve Customer of its obligation to pay fees for the suspended period.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 458 Td (9. CUSTOMER DATA AND SECURITY) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 450 m 548 450 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 432 Td (9.1   Ownership.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 139.51 432 Td (As between the Parties, Customer owns all right, title and interest in and to Customer Data.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 419 Td (Vendor acquires no rights in Customer Data other than the limited rights expressly granted in this Agreement.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 400 Td (9.2   Security Measures.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 174.36 400 Td (Vendor shall maintain an information security programme consistent with SOC 2 Type II) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 387 Td (and shall make its most recent audit report available to Customer on request under confidentiality.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 368 Td (9.3   Incident Notification.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 181.72 368 Td (Vendor shall notify Customer without undue delay, and in any event within seventy-two) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 355 Td (\(72\) hours, of becoming aware of any unauthorised access to or disclosure of Customer Data, and shall provide) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 342 Td (sufficient information to enable Customer to meet its own notification obligations.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 323 Td (9.4   Service Improvement.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 186.5 323 Td (Notwithstanding Section 9.1, Customer grants Vendor a perpetual, irrevocable,) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 310 Td (worldwide, royalty-free licence to use, reproduce and create derivative works of Customer Data for the purpose of) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 297 Td (developing, training and improving Vendor's machine-learning models and other products and services. This) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 284 Td (licence survives termination of this Agreement.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 259 Td (10. SERVICE LEVELS) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 251 m 548 251 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 233 Td (10.1   Availability.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 145.85 233 Td (Vendor shall use commercially reasonable efforts to make the Services available at least) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 220 Td (ninety-nine and five tenths percent \(99.5%\) of the time in each calendar month, excluding scheduled maintenance.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 207 Td (Customer's sole and exclusive remedy for any failure to meet this commitment is the service credits set out in) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 194 Td (Exhibit A.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 175 Td (10.2   Exclusions.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 145.85 175 Td (The availability commitment excludes downtime caused by Customer's systems, third-party) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 162 Td (services, or force majeure events as described in Section 10.4.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 143 Td (10.3   Maintenance.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 153.23 143 Td (Vendor shall give at least five \(5\) business days' notice of scheduled maintenance likely to) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 130 Td (affect availability.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 105 Td (11. LIMITATION OF LIABILITY) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 97 m 548 97 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 79 Td (11.1   Exclusion.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 140.57 79 Td (Neither Party shall be liable for any indirect, incidental, special, consequential or punitive) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 66 Td (damages, or for lost profits, revenue or data, however caused and under any theory of liability.) Tj ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 14 0 R >>
+endobj
+14 0 obj
+<< /Length 6267 >>
+stream
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 714 Td (11.2   Cap.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 113.64 714 Td (Each Party's total aggregate liability arising out of or relating to this Agreement shall not exceed the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 701 Td (total fees paid by Customer under this Agreement in the three \(3\) months immediately preceding the event giving) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 688 Td (rise to the claim.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 669 Td (11.3   Mutual Exceptions.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 179.62 669 Td (The exclusion in Section 11.1 does not apply to a Party's fraud or wilful misconduct, or) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 656 Td (to death or personal injury caused by a Party's negligence.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 637 Td (11.4   Customer Exceptions.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 193.35 637 Td (The limitation in Section 11.2 shall not apply to, and Customer's liability shall be) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 624 Td (unlimited in respect of: \(a\) Customer's payment obligations; \(b\) Customer's indemnification obligations under) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 611 Td (Section 12.1; \(c\) Customer's breach of Section 2.2; and \(d\) any breach of this Agreement by Customer.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 586 Td (12. INDEMNIFICATION) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 578 m 548 578 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 560 Td (12.1   By Customer.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 154.81 560 Td (Customer shall defend, indemnify and hold harmless Vendor, its Affiliates, officers, directors,) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 547 Td (employees and agents from and against any and all claims, damages, losses, liabilities, costs and expenses) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 534 Td (\(including reasonable legal fees\) arising out of or relating to Customer Data, Customer's use of the Services, or) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 521 Td (Customer's breach of this Agreement, regardless of whether such claim arises in whole or in part from Vendor's) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 508 Td (own negligence.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 489 Td (12.2   By Vendor.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 143.2 489 Td (Vendor shall defend Customer against any third-party claim that the Services, as provided by) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 476 Td (Vendor and used in accordance with the Documentation, infringe a United States patent or copyright, and shall pay) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 463 Td (damages finally awarded, subject to the limitation in Section 11.2.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 444 Td (12.3   Procedure.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 142.68 444 Td (The indemnified Party shall promptly notify the indemnifying Party of any claim, give the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 431 Td (indemnifying Party sole control of the defence and settlement, and provide reasonable cooperation at the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 418 Td (indemnifying Party's expense.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 393 Td (13. CONFIDENTIALITY AND GENERAL OBLIGATIONS) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 385 m 548 385 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 367 Td (13.1   Obligation.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 142.67 367 Td (Each Party shall protect the other's Confidential Information using no less than reasonable care) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 354 Td (and shall not disclose it except to its employees, Affiliates and advisers who need to know it and who are bound by) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 341 Td (confidentiality obligations no less protective than these.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 322 Td (13.2   Exceptions.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 146.37 322 Td (These obligations do not apply to information that is or becomes public through no fault of the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 309 Td (receiving Party, was known to the receiving Party before disclosure, is independently developed without use of the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 296 Td (disclosing Party's Confidential Information, or is rightfully received from a third party without restriction.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 277 Td (13.3   Duration.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 134.75 277 Td (The obligations in this Section continue for three \(3\) years from the date of disclosure, and) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 264 Td (indefinitely in respect of any information that constitutes a trade secret.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 245 Td (13.4   Compelled Disclosure.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 195.47 245 Td (A Party may disclose Confidential Information to the extent required by law,) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 232 Td (provided it gives the other Party prompt notice where legally permitted and reasonable assistance in seeking) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 219 Td (protective treatment.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 200 Td (13.5   Assignment.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 150.06 200 Td (Vendor may assign or transfer this Agreement, in whole or in part, to any Affiliate or successor) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 187 Td (without Customer's consent and without notice. Customer may not assign or transfer this Agreement, in whole or in) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 174 Td (part, without Vendor's prior written consent, which Vendor may withhold in its sole discretion.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 149 Td (14. GOVERNING LAW) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 141 m 548 141 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 123 Td (14.1   Law.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 114.17 123 Td (This Agreement and any dispute arising out of or in connection with it shall be governed by and) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 110 Td (construed in accordance with the laws of the British Virgin Islands, without regard to its conflict-of-laws principles.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 85 Td (15. DISPUTE RESOLUTION) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 77 m 548 77 l S
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 16 0 R >>
+endobj
+16 0 obj
+<< /Length 4630 >>
+stream
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 714 Td (15.1   Arbitration.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 144.25 714 Td (Any dispute arising out of or relating to this Agreement shall be finally resolved by binding) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 701 Td (arbitration administered by the Singapore International Arbitration Centre under its rules then in force, seated in) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 688 Td (Singapore, before a single arbitrator.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 669 Td (15.2   Waivers.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 132.12 669 Td (EACH PARTY IRREVOCABLY WAIVES ANY RIGHT TO TRIAL BY JURY AND AGREES THAT) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 656 Td (ANY CLAIM SHALL BE BROUGHT ONLY IN AN INDIVIDUAL CAPACITY AND NOT AS A PLAINTIFF OR CLASS) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 643 Td (MEMBER IN ANY PURPORTED CLASS OR REPRESENTATIVE PROCEEDING.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 618 Td (16. MISCELLANEOUS) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 610 m 548 610 l S
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 592 Td (16.1   Entire Agreement.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 174.87 592 Td (This Agreement, together with all Order Forms and Exhibits, constitutes the entire) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 579 Td (agreement between the Parties and supersedes all prior proposals and understandings on its subject matter.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 560 Td (16.2   Order of Precedence.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 189.14 560 Td (In the event of conflict, the following order applies: \(a\) the applicable Order Form; \(b\)) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 547 Td (the body of this Agreement; \(c\) the Exhibits.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 528 Td (16.3   Notices.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 130.01 528 Td (Notices shall be given in writing to the addresses stated above, and are deemed received on) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 515 Td (delivery if hand-delivered, or three \(3\) business days after posting if sent by recorded delivery.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 496 Td (16.4   Amendment.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 150.58 496 Td (No amendment to this Agreement is effective unless it is in writing and signed by an) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 483 Td (authorised representative of each Party.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 464 Td (16.5   Severability.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 149.02 464 Td (If any provision is held unenforceable, the remainder of this Agreement continues in full force) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 451 Td (and the unenforceable provision shall be modified to the minimum extent necessary to make it enforceable.) Tj ET
+BT /F2 9.5 Tf 0.09 0.09 0.1 rg 64 432 Td (16.6   Counterparts.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 155.33 432 Td (This Agreement may be executed in counterparts, each of which is deemed an original.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 407 Td (EXHIBIT A Ч SERVICE CREDITS) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 399 m 548 399 l S
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 387 Td (Where monthly availability falls below the commitment in Section 10.1, Customer may request service credits,) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 374 Td (calculated as a percentage of the monthly fee for the affected Services:) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 357 Td (99.0% to below 99.5% Ч a credit of five percent \(5%\) of the monthly fee.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 344 Td (95.0% to below 99.0% Ч a credit of ten percent \(10%\) of the monthly fee.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 331 Td (Below 95.0% Ч a credit of twenty percent \(20%\) of the monthly fee.) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 314 Td (Credits must be requested in writing within thirty \(30\) days of the end of the affected month, are applied against) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 301 Td (future invoices, are not payable in cash, and shall not in aggregate exceed twenty percent \(20%\) of the fees for the) Tj ET
+BT /F1 9.5 Tf 0.09 0.09 0.1 rg 64 288 Td (affected month.) Tj ET
+BT 0.6 Tc /F2 10.5 Tf 0.09 0.09 0.1 rg 64 263 Td (SIGNATURES) Tj ET BT 0 Tc ET
+0.6 w 0.8 0.8 0.82 RG 64 255 m 548 255 l S
+BT /F2 9 Tf 0.09 0.09 0.1 rg 64 233 Td (HELIX DATA SYSTEMS, INC.) Tj ET
+0.6 w 0.6 0.6 0.64 RG 64 207 m 264 207 l S
+BT /F1 7.5 Tf 0.36 0.36 0.4 rg 64 196 Td (Name / Title / Date) Tj ET
+BT /F2 9 Tf 0.09 0.09 0.1 rg 64 174 Td (NORTHWIND STUDIO LLC) Tj ET
+0.6 w 0.6 0.6 0.64 RG 64 148 m 264 148 l S
+BT /F1 7.5 Tf 0.36 0.36 0.4 rg 64 137 Td (Name / Title / Date) Tj ET
+endstream
+endobj
+xref
+0 17
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000148 00000 n 
+0000000245 00000 n 
+0000000347 00000 n 
+0000000442 00000 n 
+0000000607 00000 n 
+0000000753 00000 n 
+0000006673 00000 n 
+0000006820 00000 n 
+0000013103 00000 n 
+0000013251 00000 n 
+0000019583 00000 n 
+0000019731 00000 n 
+0000026051 00000 n 
+0000026199 00000 n 
+trailer
+<< /Size 17 /Root 1 0 R /Info 6 0 R >>
+startxref
+30882
+%%EOF

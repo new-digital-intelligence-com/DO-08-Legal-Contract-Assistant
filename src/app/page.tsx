@@ -24,7 +24,7 @@ export default function Console() {
   const [section, setSection] = useState("overview");
   const [contractId, setContractId] = useState<string>();
 
-  const status = useApi<{ workspace: WorkspaceStatus }>("/api/status");
+  const status = useApi<{ workspace: WorkspaceStatus | null }>("/api/status");
 
   // The section lives in the hash so a review can be linked to and survives a
   // reload — a lawyer sent "look at the Acme cap" should land on it.
@@ -50,9 +50,11 @@ export default function Console() {
     [navigate],
   );
 
+  // Undefined rather than 0 when Drive is unreachable: the rail's badges are
+  // hidden for an undefined count, and a 0 there would claim an empty queue.
   const counts = {
-    contracts: status.data?.workspace.contracts,
-    awaitingSignOff: status.data?.workspace.awaitingSignOff,
+    contracts: status.data?.workspace?.contracts,
+    awaitingSignOff: status.data?.workspace?.awaitingSignOff,
   };
 
   return (
@@ -63,11 +65,8 @@ export default function Console() {
       status={
         status.data && (
           <div className="space-y-0.5">
-            <div>{status.data.workspace.model.name}</div>
-            <div>
-              Drive:{" "}
-              {status.data.workspace.drive.state === "ready" ? "connected" : "not connected"}
-            </div>
+            <div>{status.data.workspace?.model.name ?? "model not read"}</div>
+            <div>Drive: {status.data.workspace ? "connected" : "not connected"}</div>
           </div>
         )
       }

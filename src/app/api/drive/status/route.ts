@@ -1,5 +1,4 @@
 import { driveEnv, driveStatus, probeFolder } from "@/lib/drive";
-import { mirrorHealth } from "@/lib/store";
 import { failed, ok } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -24,7 +23,6 @@ export async function GET() {
       reachable: probe?.ok ?? false,
       folderName: probe?.ok ? probe.folder.name : undefined,
       reason: probe && !probe.ok ? probe.reason : undefined,
-      mirror: mirrorHealth(),
     });
   } catch (error) {
     return failed(error, "The Drive status could not be read.");

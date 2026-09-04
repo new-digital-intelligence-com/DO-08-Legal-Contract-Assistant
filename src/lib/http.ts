@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { WorkspaceUnavailableError } from "./drive";
 
 /**
  * The shapes every route agrees on.
@@ -24,6 +25,12 @@ export function bad(message: string, status = 400) {
 }
 
 export function failed(error: unknown, fallback: string) {
+  // Not a bug: the workspace folder is simply not connected yet. 503 with the
+  // instruction, rather than a 500 that sends somebody hunting for a stack.
+  if (error instanceof WorkspaceUnavailableError) {
+    return NextResponse.json({ error: error.message }, { status: 503 });
+  }
+
   const message = error instanceof Error ? explain(error) : fallback;
   // Also to the server log, with the stack. The browser gets a sentence; the
   // person debugging needs the line it came from.

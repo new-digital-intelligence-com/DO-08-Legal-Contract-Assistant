@@ -201,7 +201,6 @@ export function ContractsPanel({
               { label: "Type", width: "10rem" },
               { label: "Our position", width: "9rem" },
               { label: "Status", width: "8rem" },
-              { label: "Drive", width: "7rem" },
               { label: "Uploaded", width: "11rem" },
             ]}
           >
@@ -221,15 +220,6 @@ export function ContractsPanel({
                 <Td>{label(POSITIONS, contract.position)}</Td>
                 <Td>
                   <Badge tone={STATUS_TONE[contract.status]} label={contract.status} dot />
-                </Td>
-                <Td>
-                  {contract.input ? (
-                    <span className="text-[12px] text-ok-ink">Filed</span>
-                  ) : (
-                    // Never rendered as a tick. A contract that is only on this
-                    // machine has to look different from one that is safe.
-                    <span className="text-[12px] text-warn-ink">Local only</span>
-                  )}
                 </Td>
                 <Td>{when(contract.uploadedAt)}</Td>
               </Tr>

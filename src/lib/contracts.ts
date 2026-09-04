@@ -4,7 +4,7 @@ import { record } from "./audit";
 import { PDF_LIMITS, MODEL, modelConfigured } from "./anthropic";
 import { driveConfigured, driveEnv, driveStatus, trashFile, workspace } from "./drive";
 import { fileInput } from "./outputs";
-import { mutate, newId, putBlob, readBlob, readStore, writeStore } from "./store";
+import { getContractFile, mutate, newId, readStore, writeStore } from "./store";
 import { reviewer } from "./settings";
 import type {
   Contract,
@@ -133,7 +133,12 @@ export async function ingest(
   const existing = await readStore<Contract[]>(COLLECTION, []);
   const duplicateOf = existing.find((contract) => contract.sha256 === hash);
 
-  const localPath = await putBlob(hash, bytes);
+  // Drive first, and its failure is the ingest's failure. There is no local
+  // copy to fall back to, so a register row written before the upload
+  // succeeded would point at a file that does not exist — and would look
+  // exactly like one that does.
+  const filed = await fileInput({ filename: input.filename, sha256: hash }, bytes);
+
   const contract: Contract = {
     id: newId("con"),
     filename: input.filename,
@@ -150,14 +155,8 @@ export async function ingest(
     position: input.position ?? "unknown",
     status: "uploaded",
     reviewCount: 0,
-    localPath,
+    input: filed,
   };
-
-  // Drive before the register: a row claiming a `DriveRef` that no write
-  // produced is exactly the lie this app is built not to tell. `fileInput`
-  // returns undefined rather than throwing when Drive is unreachable, so an
-  // outage costs the reference and not the upload.
-  contract.input = await fileInput(contract, bytes);
 
   await mutate<Contract[], void>(COLLECTION, [], (all) => ({
     next: [contract, ...all],
@@ -170,8 +169,7 @@ export async function ingest(
     subject: contract.id,
     detail:
       `Uploaded ${contract.filename} (${(bytes.length / 1024).toFixed(0)} KB` +
-      `${pages ? `, ${pages} pages` : ""}) from ${contract.origin}. ` +
-      (contract.input ? "Filed to Drive input/." : "Kept locally; not filed to Drive.") +
+      `${pages ? `, ${pages} pages` : ""}) from ${contract.origin}, filed to Drive input/. ` +
       (duplicateOf ? ` Same content as ${duplicateOf.filename}, uploaded ${duplicateOf.uploadedAt}.` : ""),
   });
 
@@ -198,13 +196,13 @@ export async function getContract(id: string): Promise<Contract | undefined> {
 export async function readContractBytes(id: string): Promise<Buffer> {
   const contract = await getContract(id);
   if (!contract) throw new Error(`No contract with id ${id}.`);
-  if (!contract.localPath) {
+  if (!contract.input) {
     throw new Error(
-      `${contract.filename} has no local copy. It was uploaded by a process that no longer has ` +
-        `its bytes, and Drive is the only remaining copy.`,
+      `${contract.filename} has no file on Drive. Its register row was written without one, ` +
+        `which should not happen — re-upload the document.`,
     );
   }
-  return readBlob(contract.localPath);
+  return getContractFile(contract.input.fileId);
 }
 
 export async function readContractBase64(id: string): Promise<string> {

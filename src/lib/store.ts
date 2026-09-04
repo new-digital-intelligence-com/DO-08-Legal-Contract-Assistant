@@ -1,192 +1,170 @@
 import "server-only";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
 import {
-  driveConfigured,
+  downloadFile,
+  driveStatus,
   findInFolder,
   putJson,
   readTextFile,
+  uploadFile,
   workspace,
+  WorkspaceUnavailableError,
 } from "./drive";
 
 /**
- * The register: local disk first, Drive as the durable mirror.
+ * The register's storage: Drive, and Drive only.
  *
- * DO-09 put its register on Drive alone and paid a round trip for every read.
- * This app cannot make that trade, for a reason specific to what it is: the
- * folder it is pointed at already exists and is owned by somebody else, so
- * Drive is not reachable until a person has been through a consent screen. A
- * Drive-only register would mean an app that does nothing at all until that
- * happens — no upload, no review, no queue — and the first thing anybody wants
- * to do with a contract reviewer is give it a contract.
+ * Contracts, reviews, standards, drafts, answers and the audit trail all live
+ * as JSON files in the workspace folder's `state/`, and the contract PDFs
+ * themselves live in `input/`. Nothing is written to this machine's disk.
+ * Every read genuinely asks Drive; every write genuinely goes to Drive.
  *
- * So the ordering is: write locally, then mirror. Local is what the app reads,
- * which makes every page fast and makes the app work on the first run. Drive is
- * where the contracts and the reviews actually live for anybody who is not
- * sitting at this machine, which is what the folder was for.
+ * The earlier version of this file kept a local `.data/` copy and mirrored it
+ * up. That was faster and it was wrong: two copies of a register drift, and the
+ * one a person is looking at is then not necessarily the one the folder holds.
+ * A lawyer opening the shared folder and a lawyer opening this console have to
+ * be reading the same thing, and the only way to guarantee that is to have one
+ * of them.
  *
- * The honesty requirement that comes with that split is `mirrorHealth()`. A
- * mirror that fails must never look like a mirror that succeeded — the app says
- * "kept locally, not yet on Drive" and names the reason, rather than showing a
- * green tick over a folder that has nothing in it. Every place the UI claims
- * something is on Drive is backed by a `DriveRef` that only exists because a
- * write returned an id.
+ * ## What this costs
+ *
+ * A network round trip on every read and every write, and — more importantly —
+ * **the app does nothing at all until Drive is connected.** There is no local
+ * fallback to degrade to. That is the deliberate consequence of the decision
+ * above, and every entry point says so plainly rather than presenting an empty
+ * workspace: `readStore` throws when Drive is unreachable, it never returns the
+ * fallback, because "no contracts yet" and "cannot reach the folder" are
+ * opposite facts and only one of them is ever true.
+ *
+ * ## The read cache
+ *
+ * A few seconds' memory of what Drive just said. Not a store — nothing here
+ * survives the process — it is a debounce, and it earns its place because one
+ * screen asks the same question several times: the overview reads contracts,
+ * reviews and standards, and the rail reads most of them again a moment later.
+ * Without it each of those is a fresh round trip for an answer that cannot have
+ * changed in the last two hundred milliseconds, and the page takes seconds to
+ * draw. Any write from this process drops the entry immediately, so nothing you
+ * do here is ever served back to you stale.
  */
 
-const DATA_DIR = path.join(process.cwd(), ".data");
+const CACHE_MS = 8_000;
+const reads = new Map<string, { at: number; value: unknown }>();
 
-/* ────────────────────────────────────────────────────────────────────────────
- * Local disk
- * ────────────────────────────────────────────────────────────────────────── */
+/**
+ * Which Drive file each collection lives in.
+ *
+ * A read would otherwise cost two round trips: a search of `state/` for the
+ * file named `contracts.json`, then a download of what the search returned. A
+ * Drive file keeps its id when its contents are replaced, so that search only
+ * ever tells us something we already learned the first time. Remembering it
+ * halves the traffic for the whole register.
+ *
+ * The id can go stale — somebody deletes `state/contracts.json` in the Drive UI
+ * — so both paths below drop the remembered id and fall back to the search
+ * rather than reporting a failure. A wrong id costs an extra round trip once,
+ * never a wrong answer.
+ */
+const fileIds = new Map<string, string>();
 
-function localPath(name: string): string {
-  // The collection name comes from this codebase, never from a request. The
-  // guard is here anyway because the day it starts coming from a request is not
-  // the day anybody will remember to add it.
-  if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`Bad collection name: ${name}`);
-  return path.join(DATA_DIR, `${name}.json`);
-}
-
-async function readLocal<T>(name: string): Promise<T | undefined> {
-  try {
-    return JSON.parse(await readFile(localPath(name), "utf8")) as T;
-  } catch {
-    return undefined;
+function requireDrive(): void {
+  const status = driveStatus();
+  if (status.state !== "ready") {
+    throw new WorkspaceUnavailableError(
+      `${status.detail} This app keeps nothing locally, so it cannot read or write the register ` +
+        `until the workspace folder is reachable.`,
+    );
   }
 }
 
 /**
- * Write through a temporary file and rename over the target.
+ * A collection, read from `state/`.
  *
- * `rename` is atomic within a filesystem, so a process killed mid-write leaves
- * either the old register or the new one — never a half-written JSON file that
- * every subsequent read parses as "no contracts yet". Writing in place would
- * make a crash during a save look exactly like an empty workspace.
+ * `fallback` is returned only when Drive was reached and the file genuinely is
+ * not there — a workspace that has never had a contract in it. It is never
+ * returned because a call failed: that throws, so a caller can never mistake an
+ * outage for an empty register.
  */
-async function writeLocal(name: string, value: unknown): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  const target = localPath(name);
-  const temp = `${target}.${process.pid}.tmp`;
-  await writeFile(temp, JSON.stringify(value, null, 2), "utf8");
-  await rename(temp, target);
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
- * The Drive mirror
- * ────────────────────────────────────────────────────────────────────────── */
-
-type MirrorHealth = {
-  /** Whether Drive is configured and consented at all. */
-  enabled: boolean;
-  /** The last collection successfully mirrored, and when. */
-  lastOk?: { name: string; at: string };
-  /** The last failure, kept until a later write succeeds. */
-  lastError?: { name: string; at: string; message: string };
-};
-
-const health: MirrorHealth = { enabled: false };
-
-export function mirrorHealth(): MirrorHealth {
-  return { ...health, enabled: driveConfigured() };
-}
-
-/** Remembered Drive file ids, so a mirror costs one round trip instead of two. */
-const mirrorIds = new Map<string, string>();
-
-/**
- * Push one collection to `state/` on Drive.
- *
- * Failures are recorded and swallowed rather than thrown. That is deliberate
- * and it is the only place in this app where an error is not propagated: a
- * Drive outage must not make an upload fail, because the contract is already
- * saved locally and the review can already run. What it must not do is pass
- * silently — hence `health`, which the status bar reads.
- */
-async function mirror(name: string, value: unknown): Promise<void> {
-  if (!driveConfigured()) return;
-  try {
-    const folders = await workspace();
-    const known = mirrorIds.get(name);
-    let file;
-    try {
-      file = await putJson(folders.stateId, `${name}.json`, value, known);
-    } catch (error) {
-      // A remembered id that no longer resolves is the one failure worth a
-      // second attempt: drop it and let the write find the file by name.
-      if (!known) throw error;
-      mirrorIds.delete(name);
-      file = await putJson(folders.stateId, `${name}.json`, value);
-    }
-    mirrorIds.set(name, file.id);
-    health.lastOk = { name, at: new Date().toISOString() };
-    health.lastError = undefined;
-  } catch (error) {
-    health.lastError = {
-      name,
-      at: new Date().toISOString(),
-      message: error instanceof Error ? error.message : String(error),
-    };
-    console.warn(`[store] could not mirror ${name}.json to Drive:`, health.lastError.message);
-  }
-}
-
-/**
- * Seed a collection from Drive when this machine has never seen it.
- *
- * This is what makes the workspace portable rather than machine-bound: a fresh
- * checkout pointed at the same folder picks up the register that is already
- * there instead of presenting an empty queue. It runs once per collection per
- * process and only when local disk has nothing — it is a seed, never a sync, so
- * it can never overwrite work done here with an older copy from Drive.
- */
-const hydrated = new Set<string>();
-
-async function hydrate<T>(name: string): Promise<T | undefined> {
-  if (hydrated.has(name) || !driveConfigured()) return undefined;
-  hydrated.add(name);
-  try {
-    const folders = await workspace();
-    const file = await findInFolder(folders.stateId, `${name}.json`);
-    if (!file) return undefined;
-    mirrorIds.set(name, file.id);
-    const value = JSON.parse(await readTextFile(file.id)) as T;
-    await writeLocal(name, value);
-    console.log(`[store] seeded ${name}.json from Drive`);
-    return value;
-  } catch (error) {
-    console.warn(`[store] could not seed ${name}.json from Drive:`, error);
-    return undefined;
-  }
-}
-
-/* ────────────────────────────────────────────────────────────────────────────
- * The interface every other module uses
- * ────────────────────────────────────────────────────────────────────────── */
-
 export async function readStore<T>(name: string, fallback: T): Promise<T> {
-  const local = await readLocal<T>(name);
-  if (local !== undefined) return local;
+  requireDrive();
+  const folders = await workspace();
+  const key = `${folders.stateId}:${name}`;
 
-  const seeded = await hydrate<T>(name);
-  if (seeded !== undefined) return seeded;
+  const hit = reads.get(key);
+  if (hit && Date.now() - hit.at < CACHE_MS) {
+    // Handed back as a copy. Callers map and filter these freely, and a shared
+    // reference would let one screen's work show up in another's.
+    return JSON.parse(JSON.stringify(hit.value)) as T;
+  }
 
-  return fallback;
+  const known = fileIds.get(key);
+  if (known) {
+    try {
+      const value = JSON.parse(await readTextFile(known)) as T;
+      reads.set(key, { at: Date.now(), value });
+      return value;
+    } catch {
+      fileIds.delete(key);
+    }
+  }
+
+  const file = await findInFolder(folders.stateId, `${name}.json`);
+  if (!file) {
+    reads.set(key, { at: Date.now(), value: fallback });
+    return fallback;
+  }
+
+  fileIds.set(key, file.id);
+
+  let value: T;
+  try {
+    value = JSON.parse(await readTextFile(file.id)) as T;
+  } catch (error) {
+    // A malformed file is reported, never silently treated as empty. Something
+    // wrote it badly or a write was interrupted, and reading it as "no
+    // contracts" would hide that at exactly the wrong moment.
+    throw new Error(
+      `state/${name}.json on Drive could not be parsed: ` +
+        `${error instanceof Error ? error.message : String(error)}. ` +
+        `It has been left alone rather than overwritten.`,
+    );
+  }
+
+  reads.set(key, { at: Date.now(), value });
+  return value;
 }
 
 export async function writeStore<T>(name: string, value: T): Promise<void> {
-  await writeLocal(name, value);
-  await mirror(name, value);
+  requireDrive();
+  const folders = await workspace();
+  const key = `${folders.stateId}:${name}`;
+
+  const known = fileIds.get(key);
+  let file;
+  try {
+    file = await putJson(folders.stateId, `${name}.json`, value, known);
+  } catch (error) {
+    // A remembered id that no longer resolves is the one failure worth a second
+    // attempt: drop it and let the write find the file by name, or create it.
+    // Any other failure is real and belongs to the caller.
+    if (!known) throw error;
+    fileIds.delete(key);
+    file = await putJson(folders.stateId, `${name}.json`, value);
+  }
+
+  fileIds.set(key, file.id);
+  reads.set(key, { at: Date.now(), value });
 }
 
 /**
  * Serialise read-modify-write on one collection, within this process.
  *
  * Two reviews finishing at the same moment would otherwise each read the same
- * file and the second write would drop the first result. This queue is what
- * stops that. It is in-memory bookkeeping — nothing it tracks is a value this
- * app stores, only the order two writes happen in — and it does not protect
- * against a second *process* writing the same files. Run as intended, one
- * server against one `.data/` directory, it covers every write the app makes.
+ * Drive file and the second write would drop the first result. This queue is
+ * what stops that. It is in-memory bookkeeping — nothing it tracks is a value
+ * this app stores, only the order two writes happen in — and it cannot protect
+ * against a second *process* writing the same folder. Nothing in a
+ * folder-of-JSON-files design can; Drive offers nothing to build a lock from.
+ * Run as intended, one server against one folder, it covers every write.
  */
 const chains = new Map<string, Promise<unknown>>();
 
@@ -229,10 +207,11 @@ export async function append<T extends { id: string }>(
 /**
  * Add several records in one read-modify-write.
  *
- * `append` costs one read and one write; calling it N times costs N of each,
- * and each of those writes carries the whole collection, which grows on every
- * iteration. Given oldest-first — the order things happened in — and stored
- * newest-first, matching what a sequence of plain `append` calls produces.
+ * `append` costs one Drive read and one Drive write; calling it N times costs N
+ * of each, and each of those writes carries the whole collection, which grows
+ * on every iteration. Given oldest-first — the order things happened in — and
+ * stored newest-first, matching what a sequence of plain `append` calls
+ * produces.
  */
 export async function appendMany<T extends { id: string }>(
   name: string,
@@ -247,28 +226,42 @@ export async function appendMany<T extends { id: string }>(
 }
 
 /* ────────────────────────────────────────────────────────────────────────────
- * Blobs — the contract files themselves
+ * The contract files themselves
  * ────────────────────────────────────────────────────────────────────────── */
 
-const BLOB_DIR = path.join(DATA_DIR, "files");
-
 /**
- * Keep a copy of an uploaded file on disk, addressed by content hash.
+ * Put an uploaded PDF in `input/`, exactly as it arrived.
  *
- * Content-addressed rather than by contract id: the same NDA uploaded twice
- * under two names is one set of bytes, and a re-review reads it without a
- * network call. Drive holds the durable copy under the original filename in
- * `input/`; this is the working one.
+ * Exactly as it arrived matters: this is the copy a lawyer opens to check a
+ * quote against the page, and a re-encoded or renamed file is no longer
+ * evidence of what was reviewed.
+ *
+ * Unlike everything else here this throws loudly on failure and has no fallback
+ * — there is nowhere else for the bytes to go, and an ingest that reported
+ * success without the file landing would leave a register row pointing at
+ * nothing.
  */
-export async function putBlob(sha256: string, bytes: Buffer, extension = "pdf"): Promise<string> {
-  await mkdir(BLOB_DIR, { recursive: true });
-  const file = path.join(BLOB_DIR, `${sha256}.${extension}`);
-  await writeFile(file, new Uint8Array(bytes));
-  return file;
+export async function putContractFile(
+  name: string,
+  bytes: Buffer,
+  fileId?: string,
+): Promise<string> {
+  requireDrive();
+  const folders = await workspace();
+  const file = await uploadFile({
+    parentId: folders.inputId,
+    name,
+    bytes,
+    mimeType: "application/pdf",
+    fileId,
+  });
+  return file.id;
 }
 
-export async function readBlob(filePath: string): Promise<Buffer> {
-  return readFile(filePath);
+/** Read a contract's bytes back out of `input/`. */
+export async function getContractFile(fileId: string): Promise<Buffer> {
+  requireDrive();
+  return downloadFile(fileId);
 }
 
 /** Sortable, readable, and unique enough for a single-workspace register. */

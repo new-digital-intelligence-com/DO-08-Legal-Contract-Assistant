@@ -34,6 +34,27 @@ const fail = (label, detail) => {
   console.log(`  FAIL  ${label} — ${detail}`);
 };
 
+/**
+ * Node's `fetch` throws a bare `TypeError: fetch failed` and hides the real
+ * reason — the DNS failure, the reset connection, the timeout — one level down
+ * in `cause`. Reporting only the top-level message tells somebody that a
+ * network call did not work, which they already knew. The same walk lives in
+ * src/lib/http.ts for the same reason.
+ */
+function explain(error) {
+  const parts = [error instanceof Error ? error.message : String(error)];
+  let cause = error?.cause;
+  for (let depth = 0; depth < 4 && cause; depth += 1) {
+    if (!(cause instanceof Error)) {
+      parts.push(String(cause));
+      break;
+    }
+    parts.push(cause.code && !cause.message.includes(cause.code) ? `${cause.message} (${cause.code})` : cause.message);
+    cause = cause.cause;
+  }
+  return parts.join(" — ");
+}
+
 /* ── 1. Environment ──────────────────────────────────────────────────────── */
 
 console.log("\nEnvironment");
@@ -101,7 +122,7 @@ if (env.ANTHROPIC_API_KEY) {
       fail("live call", `${payload?.error?.message ?? response.status}`);
     }
   } catch (error) {
-    fail("live call", error instanceof Error ? error.message : String(error));
+    fail("live call", explain(error));
   }
 } else {
   warn("live call", "skipped, no API key.");
@@ -112,9 +133,9 @@ if (env.ANTHROPIC_API_KEY) {
 console.log("\nGoogle Drive");
 
 if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_DRIVE_FOLDER_ID) {
-  warn("configuration", "incomplete. Contracts are reviewed and kept locally only.");
+  fail("configuration", "incomplete. This app stores everything on Drive — it cannot run without it.");
 } else if (!env.GOOGLE_REFRESH_TOKEN) {
-  warn("consent", "not granted. Visit /api/drive/connect once. Reviews stay local until then.");
+  fail("consent", "not granted. Visit /api/drive/connect once — nothing can be read or written until then.");
 } else {
   try {
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -165,7 +186,7 @@ if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_DRIVE_FOLD
       }
     }
   } catch (error) {
-    fail("drive", error instanceof Error ? error.message : String(error));
+    fail("drive", explain(error));
   }
 }
 

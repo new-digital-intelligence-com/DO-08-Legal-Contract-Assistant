@@ -424,8 +424,7 @@ export async function reviewContract(input: {
         `${findings.filter((f) => f.severity !== "acceptable").length} risks ` +
         `(${findings.filter((f) => f.severity === "critical").length} critical), ` +
         `${deviations.length} departures from the playbook. ` +
-        `Every position is pending legal sign-off. ` +
-        (filed.markdown ? "Filed to Drive output/." : "Kept locally; not filed to Drive."),
+        `Every position is pending legal sign-off. Filed to Drive output/.`,
     });
 
     return review;

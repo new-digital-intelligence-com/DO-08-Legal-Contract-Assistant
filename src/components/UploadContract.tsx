@@ -93,9 +93,7 @@ export function UploadContract({ onDone }: { onDone: () => void }) {
           state: "queued" as const,
           detail: contract.duplicateOfName
             ? `Same content as ${contract.duplicateOfName}, already uploaded.`
-            : contract.onDrive
-              ? undefined
-              : "Kept locally — not filed to Drive.",
+            : undefined,
         })),
         ...current.filter((entry) =>
           uploaded.rejected.some((rejected) => rejected.filename === entry.filename),

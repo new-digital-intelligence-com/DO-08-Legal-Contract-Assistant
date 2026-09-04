@@ -146,11 +146,7 @@ export function DraftPanel() {
             <div className="flex flex-wrap items-center gap-2">
               <CopyButton text={result.markdown} label="Copy the draft" />
               <Badge tone="warn" label={`sign-off ${result.signOff.status}`} dot />
-              {result.output ? (
-                <span className="text-[12px] text-ok-ink">Filed to Drive output/</span>
-              ) : (
-                <span className="text-[12px] text-warn-ink">Kept locally</span>
-              )}
+              <span className="text-[12px] text-ok-ink">Filed to Drive output/</span>
             </div>
 
             <Card>

@@ -488,9 +488,8 @@ export function ReviewPanel({
       </Section>
 
       <InfoNote>
-        {review.outputMarkdown
-          ? "This review is filed in the shared Drive folder under output/."
-          : "This review is kept locally and has not reached Drive."}
+        This review is filed in the shared Drive folder under <code>output/</code>, as Markdown and
+        as JSON.
       </InfoNote>
     </div>
   );
