@@ -5,7 +5,7 @@ ask, the compromise, and — where one is genuinely warranted — the point past
 exception.
 
 Two things to hold on to. **These are drafting starting points, not approved positions**: the
-[house playbook](../../contract-review/references/playbook.md) is the authority, and where it
+[house playbook](./playbook.md) is the authority, and where it
 and this file disagree, the playbook wins. And **the bracketed placeholders stay bracketed** until a person fills them. Never
 substitute a plausible number.
 

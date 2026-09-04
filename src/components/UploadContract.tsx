@@ -30,7 +30,6 @@ import type { ContractType, Position } from "@/lib/types";
 type Accepted = {
   id: string;
   filename: string;
-  onDrive: boolean;
   duplicateOfId?: string;
   duplicateOfName?: string;
 };
@@ -41,7 +40,14 @@ type Progress = {
   detail?: string;
 };
 
-export function UploadContract({ onDone }: { onDone: () => void }) {
+export function UploadContract({
+  onDone,
+  onReviewed,
+}: {
+  onDone: () => void;
+  /** Called with each contract id as its review lands, so the page can show it. */
+  onReviewed?: (contractId: string) => void;
+}) {
   const [files, setFiles] = useState<File[]>([]);
   const [position, setPosition] = useState<Position | "">("");
   const [contractType, setContractType] = useState<ContractType | "">("");
@@ -126,6 +132,7 @@ export function UploadContract({ onDone }: { onDone: () => void }) {
                 : entry,
             ),
           );
+          onReviewed?.(contract.id);
         } catch (caught) {
           setProgress((current) =>
             current.map((entry) =>

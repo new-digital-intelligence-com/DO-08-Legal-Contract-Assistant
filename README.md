@@ -33,23 +33,26 @@ Draft a mutual NDA, three-year term, Delaware law.
 What's our position on uncapped indemnities?
 ```
 
-Three skills ship in the plugin:
+One skill ships in the plugin — `contract-review` — covering three things:
 
-| Skill | Triggers on |
+| Ask | What it does |
 |---|---|
-| `contract-review` | "review this contract", "what are the risks", an attached agreement |
-| `contract-drafting` | "draft an NDA", "give me replacement language for this clause" |
-| `policy-compliance` | "what's our position on…", "does this comply with our standards" |
+| "review this contract", "what are the risks" | Reads the attached document and reports risks with the clause reference and the quote |
+| "draft an NDA", "give me replacement wording for this clause" | Drafts to the house playbook, or redlines someone else's paper |
+| "what's our position on…", "does this comply with our standards" | Answers from the playbook, and says plainly when the playbook is silent |
 
-They carry their own reference material — the CUAD-derived risk taxonomy, market
+It carries its own reference material — the CUAD-derived risk taxonomy, market
 benchmarks, per-document-type checklists, jurisdiction notes, fallback language
-and the house playbook. That is why they need no configuration.
+and the house playbook. That is why it needs no configuration.
 
 ### 2. The console, at localhost:3000
 
-Same review, through the Anthropic API, plus the things a conversation cannot
-keep: a register of every contract, a sign-off queue, an audit trail, an
-editable playbook, and filing to a shared Google Drive folder.
+One page. Upload a contract, read the review, click back through previous ones.
+No navigation, because there is nowhere else to go.
+
+Same review as the skills, through the Anthropic API, plus the two things a
+conversation cannot keep: the contracts and reviews filed in a shared Drive
+folder, and a sign-off recorded against a named person.
 
 ```bash
 cp .env.example .env.local     # fill in ANTHROPIC_API_KEY and the GOOGLE_* values
@@ -62,9 +65,10 @@ register all live in the Drive folder, so the app cannot read or write anything
 until Drive is connected — it says exactly that rather than showing an empty
 workspace.
 
-Use the skills when you are reading one contract and want an answer now. Use the
-console when the answer has to be kept — when a lawyer signs off each position,
-or when somebody will ask in six months who accepted a clause.
+Use the skills when you are reading one contract and want an answer now — they
+also do the drafting and the policy questions. Use the console when the answer
+has to be kept: when a lawyer signs off each position, or when somebody will ask
+in six months who accepted a clause.
 
 ---
 
@@ -218,6 +222,11 @@ source bytes.
 ```
 sample-contract.pdf   a full agreement to upload by hand and test with
 
+src/app/page.tsx      the whole console — upload, review, previous
+src/components/
+  UploadContract.tsx  the uploader
+  Review.tsx          the review, with the sign-off control
+
 src/lib/
   types.ts        the domain model — everything else agrees on it
   anthropic.ts    the model layer, capability-aware per model family
@@ -228,15 +237,12 @@ src/lib/
   schemas.ts      the Zod shapes the model may answer in
   review.ts       the three-pass pipeline and sign-off
   report.ts       the Markdown report, rendered deterministically
-  standards.ts    the house playbook, seeded then owned by the user
-  drafting.ts     drafting to the playbook
-  ask.ts          policy questions, answered from the workspace only
-  audit.ts        the append-only trail
+  standards.ts    the house playbook the review is judged against
+  audit.ts        the append-only trail, written to Drive
 
-src/app/api/      16 routes
-src/components/   the console
-plugins/          the Claude plugin and its three skills
-scripts/          fixtures, smoke test
+src/app/api/      11 routes
+plugins/          the Claude plugin and its skill
+scripts/          fixtures, the sample contract, smoke test
 ```
 
 ---
@@ -263,7 +269,10 @@ scripts/          fixtures, smoke test
 - **A round trip per read.** Every page load asks Drive. An eight-second read
   cache keeps one screen from asking the same question four times, but the app
   is slower than a local store would be. That is the trade.
-- **The playbook exists in two copies.** The console's is editable at runtime;
-  the plugin's is what the skills read. Change one, change the other.
+- **The playbook exists in two copies.** `src/lib/standards.ts` seeds the one
+  the console's reviews are judged against; the plugin's
+  `references/playbook.md` is what the skills read. Change one, change the other.
+- **Drafting and policy questions live in the skills, not the console.** The
+  console does one thing: upload, review, look back.
 - **Reviews are not re-run automatically.** A standard changed today does not
   retroactively flag a contract reviewed last month.

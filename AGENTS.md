@@ -17,23 +17,25 @@ position leaves `pending` is `signOff()` in `src/lib/review.ts`, which requires 
 named person and a note and writes both to the audit trail. If you find yourself
 adding a second path, you are removing the product.
 
-The same holds in the plugin's skills: they propose, they never approve, and
-they never tell anybody a contract is fine to sign.
+The same holds in the plugin's skill: it proposes, it never approves, and it
+never tells anybody a contract is fine to sign.
 
 ## Two surfaces, one set of rules
 
-- **The console** (`src/`) — a Next.js app that reviews through the Anthropic
-  API and keeps the register, the sign-off queue, the audit trail and the
-  editable playbook.
-- **The skills** (`plugins/do-08-contract-review/skills/`) — self-contained
-  Agent Skills. They read a PDF attached in Claude and review it there, with no
-  server, no key and no connector. Everything they need to judge a contract is
-  in their own reference files.
+- **The console** (`src/`) — a Next.js app, one page: upload a contract, read
+  the review, pick a previous one. No navigation, and deliberately no screens
+  for drafting, policy questions, the playbook or the audit trail — those either
+  live in the skills or are backend records. Adding a tab is a product decision,
+  not a refactor.
+- **The skill** (`plugins/do-08-contract-review/skills/contract-review/`) — one
+  self-contained Agent Skill covering review, drafting and policy questions. It
+  reads a PDF attached in Claude and works there, with no server, no key and no
+  connector. Everything it needs is in its own reference files.
 
 They are independent. Neither calls the other. The house playbook exists in both
 (`src/lib/standards.ts` seeds and
 `skills/contract-review/references/playbook.md`) and the two must be changed
-together — that duplication is deliberate, because the skills have to work with
+together — that duplication is deliberate, because the skill has to work with
 nothing running, but it is the one place this repo can drift.
 
 ## The model layer is capability-aware

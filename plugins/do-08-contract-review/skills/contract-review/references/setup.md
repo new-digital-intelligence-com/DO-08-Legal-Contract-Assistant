@@ -34,16 +34,18 @@ Restart the session afterwards — skills are bound when a session starts.
 
 ### What you get
 
-| Skill | Triggers on |
-|---|---|
-| `contract-review` | "review this contract", "what are the risks", an attached agreement |
-| `contract-drafting` | "draft an NDA", "give me replacement language for this clause" |
-| `policy-compliance` | "what's our position on…", "does this comply with our standards" |
+One skill, `contract-review`, covering three things:
 
-The skills carry their own reference material — the risk taxonomy, the market
+| Ask | What it does |
+|---|---|
+| "review this contract", "what are the risks" | Reads the attached document and reports risks with the clause reference and the quote |
+| "draft an NDA", "give me replacement wording for this clause" | Drafts to the house playbook, or redlines someone else's paper |
+| "what's our position on…", "does this comply with our standards" | Answers from the playbook, and says plainly when the playbook is silent |
+
+It carries its own reference material — the risk taxonomy, the market
 benchmarks, the per-document-type checklists, the jurisdiction notes, the
-fallback language and the house playbook. That is why they work with no
-configuration: everything they need to judge a contract is in the plugin.
+fallback language and the house playbook. That is why it works with no
+configuration: everything it needs to judge a contract is in the plugin.
 
 ## 2. The console, at localhost:3000
 

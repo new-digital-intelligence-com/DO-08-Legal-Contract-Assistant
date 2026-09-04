@@ -50,7 +50,6 @@ export async function POST(request: Request) {
     const accepted: {
       id: string;
       filename: string;
-      onDrive: boolean;
       duplicateOfId?: string;
       duplicateOfName?: string;
     }[] = [];
@@ -75,7 +74,6 @@ export async function POST(request: Request) {
         accepted.push({
           id: contract.id,
           filename: contract.filename,
-          onDrive: Boolean(contract.input),
           duplicateOfId: duplicateOf?.id,
           duplicateOfName: duplicateOf?.filename,
         });
