@@ -11,6 +11,11 @@ import { useApi, when } from "@/components/api";
 import { POSITIONS } from "@/lib/types";
 import type { Contract, Review } from "@/lib/types";
 
+type FileState =
+  | { state: "present"; name: string }
+  | { state: "trashed"; name: string }
+  | { state: "missing"; reason: string };
+
 /**
  * One contract in full.
  *
@@ -23,12 +28,13 @@ export default function ContractPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
-  const detail = useApi<{ contract: Contract; reviews: Review[] }>(
+  const detail = useApi<{ contract: Contract; reviews: Review[]; input?: FileState }>(
     id ? `/api/contracts/${id}` : undefined,
   );
 
   const contract = detail.data?.contract;
   const reviews = detail.data?.reviews ?? [];
+  const input = detail.data?.input;
 
   return (
     <div className="mx-auto w-full max-w-4xl px-5 py-8 md:px-8">
@@ -63,6 +69,36 @@ export default function ContractPage() {
       {detail.loading && !detail.data && <Loading rows={6} label="Reading the contract…" />}
 
       {detail.error && <ErrorNote>The contract could not be read: {detail.error}</ErrorNote>}
+
+      {/*
+        * The register points at a Drive file, and that file can be trashed,
+        * renamed or moved from the Drive UI without this app being told. Said
+        * plainly here rather than left as a mystery: the console showing a
+        * document that is not in the folder is exactly the kind of discrepancy
+        * that makes somebody distrust the whole register.
+        */}
+      {input?.state === "trashed" && (
+        <Note>
+          <strong>This contract&rsquo;s file is in Drive&rsquo;s trash.</strong>
+          <p className="mt-2">
+            It is still readable here and the review below is unaffected, but it will not appear in
+            the workspace folder&rsquo;s <code>input/</code> and it will be deleted for good when
+            Drive empties the trash. Nothing in this app moved it — restore it from Drive&rsquo;s
+            trash to put it back.
+          </p>
+        </Note>
+      )}
+
+      {input?.state === "missing" && (
+        <ErrorNote>
+          <strong>This contract&rsquo;s file is no longer on Drive.</strong> {input.reason}
+          <p className="mt-2">
+            The register still has the row, so the review below — if there is one — is what was
+            found when the document could still be read. It cannot be re-reviewed until the file is
+            uploaded again.
+          </p>
+        </ErrorNote>
+      )}
 
       {contract && contract.status === "failed" && (
         <div className="mb-4 space-y-3">
