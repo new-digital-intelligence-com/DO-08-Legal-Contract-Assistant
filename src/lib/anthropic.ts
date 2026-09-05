@@ -93,12 +93,20 @@ export const BUDGET = {
   /** Intake is a page of facts about the document. */
   intakeTokens: 8_000,
   /**
-   * The risk pass, which carries a quote and a redline per finding and is the
-   * one call in this app that can genuinely produce ten thousand tokens of
-   * output. Thinking tokens count against this too, so it sits well above the
-   * length of the answer alone.
+   * The risk pass.
+   *
+   * This is the one call in the app that can genuinely produce tens of
+   * thousands of tokens: fifteen to twenty-five findings, each with a verbatim
+   * quote and a three-tier redline, plus the red-flag scan, the key terms, the
+   * missing provisions and the ranked asks.
+   *
+   * It was 32K and that was too low. A five-page agreement overran it, and the
+   * failure is nastier than a clean cutoff: the response is truncated
+   * mid-object, so the schema rejects it and the error names an enum value
+   * rather than the token limit that actually caused it. Thinking tokens come
+   * out of the same budget, which is the part that is easy to forget.
    */
-  reviewTokens: 32_000,
+  reviewTokens: 48_000,
   standardsTokens: 12_000,
   draftTokens: 24_000,
   answerTokens: 8_000,
@@ -226,16 +234,21 @@ export async function readDocument<T extends z.ZodType>({
   checkApiKey();
   const capped = Math.min(maxTokens, MODEL_TRAITS.maxOutputTokens);
 
-  const response = await anthropic.messages.parse({
-    model: MODEL,
-    max_tokens: capped,
-    system,
-    ...tuning(capped, think),
-    output_config: outputConfig(effort, zodOutputFormat(schema)),
-    messages: [
-      { role: "user", content: [documentBlock(pdf), { type: "text", text: instruction }] },
-    ],
-  });
+  let response;
+  try {
+    response = await anthropic.messages.parse({
+      model: MODEL,
+      max_tokens: capped,
+      system,
+      ...tuning(capped, think),
+      output_config: outputConfig(effort, zodOutputFormat(schema)),
+      messages: [
+        { role: "user", content: [documentBlock(pdf), { type: "text", text: instruction }] },
+      ],
+    });
+  } catch (error) {
+    throw explainParseFailure(error, capped);
+  }
 
   guardStop(response, capped);
   if (response.parsed_output == null) {
@@ -245,6 +258,29 @@ export async function readDocument<T extends z.ZodType>({
     );
   }
   return { value: response.parsed_output as z.infer<T>, usage: usageOf(response) };
+}
+
+/**
+ * Turn a schema-validation failure into the sentence that actually helps.
+ *
+ * `messages.parse` validates inside the SDK and throws before this code sees
+ * `stop_reason`, so a response truncated at `max_tokens` surfaces as "invalid
+ * enum value at missingProvisions.9.priority" — which sends somebody to debug a
+ * schema that is fine. The cause is almost always the budget, and the message
+ * should say so.
+ */
+function explainParseFailure(error: unknown, maxTokens: number): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  if (!/parse structured output|Invalid option|invalid_value|Validation issues/i.test(message)) {
+    return error instanceof Error ? error : new Error(message);
+  }
+  return new Error(
+    `The model's answer did not fit in ${maxTokens} tokens and was cut off mid-object, so it no ` +
+      `longer matched the expected shape. This is a budget problem, not a schema problem — the ` +
+      `partial answer is discarded rather than saved, because a review that stops halfway through ` +
+      `its findings reads exactly like a short one. Raise the budget in src/lib/anthropic.ts, or ` +
+      `review a shorter document. Underlying error: ${message.slice(0, 300)}`,
+  );
 }
 
 /** The same structured shape, over text rather than a file. */
@@ -266,14 +302,19 @@ export async function readText<T extends z.ZodType>({
   checkApiKey();
   const capped = Math.min(maxTokens, MODEL_TRAITS.maxOutputTokens);
 
-  const response = await anthropic.messages.parse({
-    model: MODEL,
-    max_tokens: capped,
-    system,
-    ...tuning(capped, think),
-    output_config: outputConfig(effort, zodOutputFormat(schema)),
-    messages: [{ role: "user", content: prompt }],
-  });
+  let response;
+  try {
+    response = await anthropic.messages.parse({
+      model: MODEL,
+      max_tokens: capped,
+      system,
+      ...tuning(capped, think),
+      output_config: outputConfig(effort, zodOutputFormat(schema)),
+      messages: [{ role: "user", content: prompt }],
+    });
+  } catch (error) {
+    throw explainParseFailure(error, capped);
+  }
 
   guardStop(response, capped);
   if (response.parsed_output == null) {

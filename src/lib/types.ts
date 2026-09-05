@@ -350,6 +350,51 @@ export type Review = {
 };
 
 /* ────────────────────────────────────────────────────────────────────────────
+ * Review progress
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * One step of a review, reported while it runs.
+ *
+ * A full review is three model calls and several minutes. Without this the
+ * console shows a spinner for that whole time, and a spinner is
+ * indistinguishable from a hang — people re-click, re-upload, or give up on a
+ * request that was working. Worse, when it does fail there is nothing to say
+ * *where*, so "the review failed" is the whole diagnosis.
+ *
+ * So each stage announces itself before it starts and reports what it found
+ * when it ends. `detail` is the part that makes this traceability rather than
+ * decoration: "Identifying the document" tells somebody the app is alive, but
+ * "Mutual NDA, Acme Corp, Delaware law" tells them it is reading the right
+ * document — and lets them stop a review that has already gone wrong instead of
+ * waiting four minutes to find out.
+ */
+export type ReviewStep =
+  | "queued"
+  | "fetching"
+  | "intake"
+  | "risk"
+  | "standards"
+  | "report"
+  | "filing"
+  | "done"
+  | "failed";
+
+export type ReviewProgress = {
+  step: ReviewStep;
+  /** What is happening, in the present tense. */
+  label: string;
+  /** What that stage established. Set when the stage completes. */
+  detail?: string;
+  /** Set on `done`. */
+  reviewId?: string;
+  /** Set on `failed`. */
+  error?: string;
+  /** Milliseconds since the review started, so the UI can show it is moving. */
+  elapsedMs: number;
+};
+
+/* ────────────────────────────────────────────────────────────────────────────
  * The house playbook
  * ────────────────────────────────────────────────────────────────────────── */
 

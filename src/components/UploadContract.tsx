@@ -5,12 +5,12 @@ import { Button, Card, ErrorNote, Field, InfoNote, inputClass } from "./ui";
 import { Icon } from "./icons";
 import { request } from "./api";
 import { CONTRACT_TYPES, POSITIONS } from "@/lib/types";
-import type { ContractType, Position } from "@/lib/types";
+import type { ContractType, Position, ReviewProgress, ReviewStep } from "@/lib/types";
 
 /**
- * Upload, then review each file one at a time.
+ * Upload, then review each file one at a time, showing every stage as it lands.
  *
- * Two decisions shape this component.
+ * Three decisions shape this component.
  *
  * **The position is asked before the upload, and it is required.** It is the
  * one input that inverts the whole review — a three-month liability cap is a
@@ -19,12 +19,17 @@ import type { ContractType, Position } from "@/lib/types";
  * correct ones. There is no "unknown" option offered: if somebody genuinely
  * does not know, the right move is to find out, not to run the review twice.
  *
- * **The review is driven from the client, one file at a time.** The upload
- * route answers as soon as the bytes are safe, and this walks each returned id
- * through `/api/contracts/[id]/review` in sequence. Sequentially rather than in
- * parallel because each review is several model calls and firing five at once
- * is how a workspace hits a rate limit — and because a person watching wants to
- * see them land one by one rather than watch a spinner for four minutes.
+ * **Each stage is reported as it completes.** The review route streams
+ * Server-Sent Events and this reads them into a checklist. A review takes
+ * minutes, and a spinner held for minutes is indistinguishable from a hang —
+ * people re-click, re-upload, or abandon a request that was working. The stage
+ * *details* matter more than the ticks: seeing "Mutual NDA · Acme Corp ·
+ * Delaware law" thirty seconds in tells somebody the app is reading the right
+ * document, and lets them stop a review that has already gone wrong instead of
+ * waiting four minutes to find out.
+ *
+ * **Files are reviewed sequentially.** Each review is several model calls, and
+ * firing five at once is how a workspace hits a rate limit.
  */
 
 type Accepted = {
@@ -34,11 +39,39 @@ type Accepted = {
   duplicateOfName?: string;
 };
 
-type Progress = {
+type FileState = {
   filename: string;
-  state: "queued" | "reviewing" | "done" | "failed";
+  state: "queued" | "uploading" | "reviewing" | "done" | "failed";
   detail?: string;
+  /** The stages reported so far, in the order they started. */
+  steps: ReviewProgress[];
 };
+
+const STEP_COUNT: ReviewStep[] = ["fetching", "intake", "risk", "standards", "report", "filing"];
+
+function seconds(ms: number): string {
+  return `${Math.round(ms / 1000)}s`;
+}
+
+/** One stage line: a tick when finished, a spinner while it is the current one. */
+function Stage({ event, running }: { event: ReviewProgress; running: boolean }) {
+  return (
+    <li className="flex items-start gap-2">
+      <span className="mt-[3px] shrink-0">
+        {running ? (
+          <span className="block size-3 animate-spin rounded-full border-[1.5px] border-ink-3 border-t-transparent" />
+        ) : (
+          <Icon name="check" className="size-3.5 text-ok-ink" />
+        )}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={running ? "text-ink" : "text-ink-2"}>{event.label}</span>
+        {event.detail && <span className="block text-ink-3">{event.detail}</span>}
+      </span>
+      <span className="tnum shrink-0 text-[11px] text-ink-3">{seconds(event.elapsedMs)}</span>
+    </li>
+  );
+}
 
 export function UploadContract({
   onDone,
@@ -54,15 +87,98 @@ export function UploadContract({
   const [counterparty, setCounterparty] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const [progress, setProgress] = useState<Progress[]>([]);
+  const [progress, setProgress] = useState<FileState[]>([]);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const pick = useCallback((chosen: FileList | null) => {
     if (!chosen) return;
-    setFiles(Array.from(chosen).filter((file) => file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")));
+    setFiles(
+      Array.from(chosen).filter(
+        (file) => file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"),
+      ),
+    );
     setError(undefined);
   }, []);
+
+  const patch = useCallback((filename: string, change: (entry: FileState) => FileState) => {
+    setProgress((current) =>
+      current.map((entry) => (entry.filename === filename ? change(entry) : entry)),
+    );
+  }, []);
+
+  /**
+   * Read the review stream, folding each event into that file's stage list.
+   *
+   * A repeated step replaces its earlier entry rather than appending, so
+   * "Reviewing as the customer" becomes "Reviewing as the customer — 8 critical,
+   * 3 important" in place instead of listing the stage twice.
+   */
+  async function streamReview(contract: Accepted, chosenPosition: Position) {
+    const response = await fetch(`/api/contracts/${contract.id}/review`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ position: chosenPosition }),
+    });
+
+    if (!response.ok || !response.body) {
+      const text = await response.text().catch(() => "");
+      let message = `The review failed (${response.status}).`;
+      try {
+        message = (JSON.parse(text) as { error?: string }).error ?? message;
+      } catch {
+        /* not JSON — keep the status message */
+      }
+      throw new Error(message);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let failure: string | undefined;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const chunks = buffer.split("\n\n");
+      // The last chunk may be a partial event; keep it for the next read.
+      buffer = chunks.pop() ?? "";
+
+      for (const chunk of chunks) {
+        const line = chunk.split("\n").find((entry) => entry.startsWith("data: "));
+        if (!line) continue;
+
+        let event: ReviewProgress;
+        try {
+          event = JSON.parse(line.slice(6)) as ReviewProgress;
+        } catch {
+          continue;
+        }
+
+        if (event.step === "failed") {
+          failure = event.error ?? "The review failed.";
+          continue;
+        }
+        if (event.step === "done") {
+          patch(contract.filename, (entry) => ({ ...entry, state: "done", detail: event.detail }));
+          onReviewed?.(contract.id);
+          continue;
+        }
+
+        patch(contract.filename, (entry) => {
+          const steps = [...entry.steps];
+          const at = steps.findIndex((step) => step.step === event.step);
+          if (at === -1) steps.push(event);
+          else steps[at] = event;
+          return { ...entry, steps };
+        });
+      }
+    }
+
+    if (failure) throw new Error(failure);
+  }
 
   async function submit() {
     if (files.length === 0) {
@@ -79,7 +195,7 @@ export function UploadContract({
 
     setBusy(true);
     setError(undefined);
-    setProgress(files.map((file) => ({ filename: file.name, state: "queued" })));
+    setProgress(files.map((file) => ({ filename: file.name, state: "uploading", steps: [] })));
 
     try {
       const form = new FormData();
@@ -93,61 +209,36 @@ export function UploadContract({
         rejected: { filename: string; reason: string }[];
       }>("/api/contracts", { method: "POST", body: form });
 
-      setProgress((current) => [
+      setProgress([
         ...uploaded.contracts.map((contract) => ({
           filename: contract.filename,
           state: "queued" as const,
           detail: contract.duplicateOfName
             ? `Same content as ${contract.duplicateOfName}, already uploaded.`
             : undefined,
+          steps: [],
         })),
-        ...current.filter((entry) =>
-          uploaded.rejected.some((rejected) => rejected.filename === entry.filename),
-        ),
         ...uploaded.rejected.map((rejected) => ({
           filename: rejected.filename,
           state: "failed" as const,
           detail: rejected.reason,
+          steps: [],
         })),
       ]);
+      onDone();
 
       // One at a time, in order. See the note at the top of this file.
       for (const contract of uploaded.contracts) {
-        setProgress((current) =>
-          current.map((entry) =>
-            entry.filename === contract.filename && entry.state === "queued"
-              ? { ...entry, state: "reviewing" }
-              : entry,
-          ),
-        );
+        patch(contract.filename, (entry) => ({ ...entry, state: "reviewing" }));
         try {
-          await request(`/api/contracts/${contract.id}/review`, {
-            method: "POST",
-            body: JSON.stringify({ position }),
-          });
-          setProgress((current) =>
-            current.map((entry) =>
-              entry.filename === contract.filename && entry.state === "reviewing"
-                ? { ...entry, state: "done" }
-                : entry,
-            ),
-          );
-          onReviewed?.(contract.id);
+          await streamReview(contract, position);
         } catch (caught) {
-          setProgress((current) =>
-            current.map((entry) =>
-              entry.filename === contract.filename && entry.state === "reviewing"
-                ? {
-                    ...entry,
-                    state: "failed",
-                    detail: caught instanceof Error ? caught.message : String(caught),
-                  }
-                : entry,
-            ),
-          );
+          patch(contract.filename, (entry) => ({
+            ...entry,
+            state: "failed",
+            detail: caught instanceof Error ? caught.message : String(caught),
+          }));
         }
-        // Refresh after each one so the list fills in as they land rather than
-        // all at once at the end.
         onDone();
       }
 
@@ -241,7 +332,10 @@ export function UploadContract({
             </select>
           </Field>
 
-          <Field label="Counterparty" hint={files.length > 1 ? "Applied only to single uploads." : "Optional."}>
+          <Field
+            label="Counterparty"
+            hint={files.length > 1 ? "Applied only to single uploads." : "Optional."}
+          >
             <input
               value={counterparty}
               onChange={(event) => setCounterparty(event.target.value)}
@@ -265,40 +359,58 @@ export function UploadContract({
           )}
         </div>
 
+        {/* ── What is happening right now ─────────────────────────────────── */}
         {progress.length > 0 && (
-          <ul className="space-y-1.5 border-t border-border pt-3 text-[12.5px]">
-            {progress.map((entry, index) => (
-              <li key={`${entry.filename}-${index}`} className="flex items-start gap-2">
-                <span className="mt-0.5 shrink-0">
-                  {entry.state === "done" && <Icon name="check" className="size-3.5 text-ok-ink" />}
-                  {entry.state === "failed" && (
-                    <Icon name="alert" className="size-3.5 text-crit-ink" />
+          <div className="space-y-3 border-t border-border pt-3">
+            {progress.map((entry) => {
+              const finished = entry.state === "done" || entry.state === "failed";
+              const last = entry.steps[entry.steps.length - 1];
+              // A stage with no detail yet is the one currently running.
+              const running = !finished && last && !last.detail ? last.step : undefined;
+              const complete = entry.steps.filter((step) => step.detail).length;
+
+              return (
+                <div key={entry.filename} className="text-[12.5px]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {entry.state === "done" && <Icon name="check" className="size-3.5 text-ok-ink" />}
+                    {entry.state === "failed" && (
+                      <Icon name="alert" className="size-3.5 text-crit-ink" />
+                    )}
+                    {!finished && (
+                      <span className="block size-3 animate-spin rounded-full border-[1.5px] border-ink-3 border-t-transparent" />
+                    )}
+                    <span className="font-medium">{entry.filename}</span>
+                    <span className="text-ink-3">
+                      {entry.state === "uploading" && "uploading to Drive"}
+                      {entry.state === "queued" && "waiting to review"}
+                      {entry.state === "reviewing" &&
+                        `reviewing — step ${Math.min(complete + 1, STEP_COUNT.length)} of ${STEP_COUNT.length}`}
+                      {entry.state === "done" && "reviewed"}
+                      {entry.state === "failed" && "failed"}
+                    </span>
+                  </div>
+
+                  {entry.steps.length > 0 && (
+                    <ul className="mt-1.5 ml-[7px] space-y-1 border-l border-border pl-3.5">
+                      {entry.steps.map((step) => (
+                        <Stage key={step.step} event={step} running={step.step === running} />
+                      ))}
+                    </ul>
                   )}
-                  {entry.state === "reviewing" && (
-                    <span className="block size-3 animate-spin rounded-full border-[1.5px] border-ink-3 border-t-transparent" />
-                  )}
-                  {entry.state === "queued" && (
-                    <span className="block size-3 rounded-full border border-border" />
-                  )}
-                </span>
-                <span className="min-w-0">
-                  <span className="font-medium">{entry.filename}</span>
-                  <span className="text-ink-3">
-                    {entry.state === "queued" && " · waiting"}
-                    {entry.state === "reviewing" && " · reviewing, this takes a minute"}
-                    {entry.state === "done" && " · reviewed"}
-                  </span>
+
                   {entry.detail && (
-                    <span
-                      className={`block ${entry.state === "failed" ? "text-crit-ink" : "text-ink-3"}`}
+                    <p
+                      className={`mt-1 ml-[18px] ${
+                        entry.state === "failed" ? "text-crit-ink" : "text-ink-3"
+                      }`}
                     >
                       {entry.detail}
-                    </span>
+                    </p>
                   )}
-                </span>
-              </li>
-            ))}
-          </ul>
+                </div>
+              );
+            })}
+          </div>
         )}
 
         <InfoNote>

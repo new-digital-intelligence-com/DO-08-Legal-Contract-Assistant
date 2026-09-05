@@ -15,6 +15,7 @@ import { mutate, newId, readStore } from "./store";
 import { CONTRACT_TYPES, PENDING, POSITIONS } from "./types";
 import type {
   ContractType,
+  ReviewProgress,
   Finding,
   Position,
   Review,
@@ -106,10 +107,27 @@ is about what is achievable, and collapsing them produces advice nobody can act 
 
 ## What to produce
 
-- **Findings.** Every material risk, worst first. Also — and this is not optional — the provisions
-  you reviewed and found acceptable, at severity "acceptable". A review listing only problems
-  reads as a demand for twelve changes. Naming the clean provisions tells a negotiator what not to
-  spend leverage on, and it is how a reader knows the review was thorough rather than alarmist.
+The findings array is the body of the review and everything else supports it. The other arrays
+are indexes; findings is where the reasoning lives. Three rules bind them together, and they are
+the difference between a thorough review and a thin one:
+
+1. **Every red flag you mark as found MUST have a matching finding.** A flag raised with no
+   finding is a risk you noticed and did not explain — the reader sees a warning with nothing
+   behind it and has to go and read the clause themselves, which is the work you were asked to do.
+2. **Every item in the negotiation priority list MUST have a matching finding.** You cannot rank
+   an ask you have not made.
+3. **You MUST include the provisions you reviewed and found acceptable**, at severity
+   "acceptable" — the liability regime if it is fair, the confidentiality term if it is normal,
+   ownership of data if it is clean. A review listing only problems reads as a demand for twelve
+   changes, and a counterparty receiving twelve treats all of them as opening positions. Naming
+   what is fine is what makes the remaining asks credible, and it is the only signal that
+   distinguishes "we checked assignment and it is symmetrical" from "nobody looked at assignment".
+
+Expect a real agreement to produce somewhere between eight and twenty-five findings. Two or three
+findings on a full-length contract means you indexed the document instead of reviewing it. Do not
+economise here: a finding you leave out is a clause nobody reads.
+
+- **Findings.** Every material risk, worst first, plus the acceptable provisions per rule 3 above.
 - **Red flags.** Return the standard scan with an entry for EVERY flag below, with found true or
   false. A list of only the ones that fired cannot be told from a list of the ones you checked:
   liability cap under 6 months; uncapped indemnification; "as-is" with no warranty; unilateral
@@ -179,21 +197,43 @@ export async function reviewContract(input: {
   position?: Position;
   contractType?: ContractType;
   actor?: string;
+  /**
+   * Called as each stage starts and finishes. Optional, and deliberately
+   * synchronous — a reporter that could fail or block would make the progress
+   * feed able to break the review it is describing.
+   */
+  onProgress?: (event: ReviewProgress) => void;
 }): Promise<Review> {
   const actor = input.actor?.trim() || reviewer();
+  const started = Date.now();
+
+  const report = (event: Omit<ReviewProgress, "elapsedMs">) => {
+    try {
+      input.onProgress?.({ ...event, elapsedMs: Date.now() - started });
+    } catch {
+      // A broken reporter must never take the review down with it.
+    }
+  };
+
   const contract = await getContract(input.contractId);
   if (!contract) throw new Error(`No contract with id ${input.contractId}.`);
 
-  const started = Date.now();
   await updateContract(contract.id, { status: "reviewing", error: undefined });
 
   try {
+    report({ step: "fetching", label: `Fetching ${contract.filename} from Drive` });
     const base64 = await readContractBase64(contract.id);
+    report({
+      step: "fetching",
+      label: `Fetching ${contract.filename} from Drive`,
+      detail: `${(contract.bytes / 1024).toFixed(0)} KB${contract.pages ? `, ${contract.pages} pages` : ""}`,
+    });
     const pdf = { base64, filename: contract.filename };
     let inputTokens = 0;
     let outputTokens = 0;
 
     /* ── Pass 1: intake ────────────────────────────────────────────────── */
+    report({ step: "intake", label: "Reading the document — what is it, and who are the parties" });
     const intake = await readDocument({
       system: INTAKE_SYSTEM,
       instruction:
@@ -205,6 +245,23 @@ export async function reviewContract(input: {
     });
     inputTokens += intake.usage.inputTokens;
     outputTokens += intake.usage.outputTokens;
+
+    report({
+      step: "intake",
+      label: "Reading the document — what is it, and who are the parties",
+      detail: [
+        intake.value.documentTypeLabel,
+        intake.value.counterparty ?? undefined,
+        intake.value.governingLaw ? `${intake.value.governingLaw} law` : undefined,
+        intake.value.documentStatus,
+        intake.value.preSigningAlerts.length
+          ? `${intake.value.preSigningAlerts.length} pre-signing alert${intake.value.preSigningAlerts.length === 1 ? "" : "s"}`
+          : undefined,
+        intake.value.pageCountReadable ? undefined : "PARTS COULD NOT BE READ",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+    });
 
     const limitations = [...intake.value.limitations];
 
@@ -230,6 +287,12 @@ export async function reviewContract(input: {
     }
 
     /* ── Pass 2: the risk review ───────────────────────────────────────── */
+    const positionLabel = POSITIONS.find((entry) => entry.id === position)?.label ?? position;
+    report({
+      step: "risk",
+      label: `Reviewing as the ${positionLabel} — this is the long one`,
+      detail: stated ? undefined : "Position was inferred, not stated",
+    });
     const risk = await readDocument({
       system: riskSystem(position, contractType, orgName()),
       instruction:
@@ -244,6 +307,50 @@ export async function reviewContract(input: {
     inputTokens += risk.usage.inputTokens;
     outputTokens += risk.usage.outputTokens;
     limitations.push(...risk.value.limitations);
+
+    /*
+     * Did the model actually write up what it flagged?
+     *
+     * This is not defensive tidying. A run of this pipeline produced a review
+     * with ten red flags marked present, nine missing provisions, seven
+     * consistency issues — and two findings. Everything had been *noticed* and
+     * almost nothing had been *explained*, and because the console renders
+     * `findings` as the risk analysis, a thorough review displayed as a nearly
+     * empty one. Nothing errored; it just quietly read as "this contract is
+     * fine".
+     *
+     * The prompt now binds the arrays together, and this checks the binding
+     * held. A gap is recorded as a limitation rather than corrected, because
+     * the honest statement is "the reviewer flagged more than it wrote up",
+     * not a silently padded list.
+     */
+    const flagged = risk.value.redFlags.filter((flag) => flag.found).length;
+    const explained = risk.value.findings.filter((f) => f.severity !== "acceptable").length;
+    if (flagged > explained) {
+      limitations.push(
+        `The reviewer marked ${flagged} red flag${flagged === 1 ? "" : "s"} as present but wrote up ` +
+          `only ${explained} risk finding${explained === 1 ? "" : "s"}. The red-flag scan and the ` +
+          `negotiation list below are more complete than the risk analysis — read those too, and ` +
+          `re-run the review if a flagged clause has no finding against it.`,
+      );
+    }
+    if (!risk.value.findings.some((f) => f.severity === "acceptable")) {
+      limitations.push(
+        "The reviewer named no provisions as acceptable. That is unusual on a full agreement and " +
+          "means this review shows only what is wrong — treat the absence of a clause from the " +
+          "findings as 'not written up', not as 'checked and fine'.",
+      );
+    }
+
+    report({
+      step: "risk",
+      label: `Reviewing as the ${positionLabel}`,
+      detail:
+        `${risk.value.findings.filter((f) => f.severity === "critical").length} critical, ` +
+        `${risk.value.findings.filter((f) => f.severity === "important").length} important, ` +
+        `${risk.value.findings.filter((f) => f.severity === "acceptable").length} acceptable · ` +
+        `${risk.value.redFlags.filter((f) => f.found).length} of ${risk.value.redFlags.length} red flags present`,
+    });
 
     // Ids and sign-off are assigned here, not by the model. An id the model
     // invents collides across runs, and a sign-off it sets is exactly what
@@ -274,6 +381,7 @@ export async function reviewContract(input: {
     let deviations: Review["standardsDeviations"] = [];
 
     if (playbook) {
+      report({ step: "standards", label: "Checking against the house playbook" });
       const summary = findings
         .map(
           (finding) =>
@@ -317,6 +425,14 @@ export async function reviewContract(input: {
         remedy: deviation.remedy ?? undefined,
       }));
 
+      report({
+        step: "standards",
+        label: "Checking against the house playbook",
+        detail: deviations.length
+          ? `${deviations.length} departure${deviations.length === 1 ? "" : "s"} from our positions`
+          : "No departures — the document matches our positions",
+      });
+
       // Mark the findings a deviation lands on, so the report can point at the
       // house rule from beside the clause rather than only in its own section.
       for (const deviation of deviations) {
@@ -329,6 +445,11 @@ export async function reviewContract(input: {
         }
       }
     } else {
+      report({
+        step: "standards",
+        label: "Checking against the house playbook",
+        detail: "Skipped — the playbook is empty",
+      });
       limitations.push(
         "The house playbook is empty, so this review was judged against market norms only and " +
           "not against this organisation's own positions.",
@@ -390,14 +511,21 @@ export async function reviewContract(input: {
       usage: { inputTokens, outputTokens },
     };
 
+    report({ step: "report", label: "Writing the report" });
     review.markdown = renderReport(review, contract);
 
     // Drive before the register, for the same reason as an upload: an
     // `outputJson` in a stored row that no write produced is a claim the app
     // cannot back up.
+    report({ step: "filing", label: "Filing the review to Drive" });
     const filed = await fileOutput(review, contract);
     review.outputJson = filed.json;
     review.outputMarkdown = filed.markdown;
+    report({
+      step: "filing",
+      label: "Filing the review to Drive",
+      detail: `output/ — Markdown and JSON`,
+    });
 
     await mutate<Review[], void>(COLLECTION, [], (all) => ({
       next: [review, ...all],
@@ -427,9 +555,19 @@ export async function reviewContract(input: {
         `Every position is pending legal sign-off. Filed to Drive output/.`,
     });
 
+    report({
+      step: "done",
+      label: "Done",
+      reviewId: review.id,
+      detail:
+        `${findings.filter((f) => f.severity !== "acceptable").length} risks, ` +
+        `every position pending legal sign-off`,
+    });
+
     return review;
   } catch (error) {
     const explained = explainModelError(error);
+    report({ step: "failed", label: "Review failed", error: explained.message });
     // The contract must not sit in the list looking reviewed. A failed review
     // is a contract nobody has looked at, and it has to read that way.
     await updateContract(contract.id, { status: "failed", error: explained.message });

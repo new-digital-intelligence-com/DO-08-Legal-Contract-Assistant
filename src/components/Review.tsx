@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Badge, Button, Card, CopyButton, ErrorNote, Loading, Note, Table, Td, Tr, inputClass, textareaClass } from "./ui";
 import { Icon } from "./icons";
 import { Markdown } from "./Markdown";
+import { PdfPreview } from "./PdfPreview";
 import { request, useAction, useApi, when } from "./api";
 import { POSITIONS } from "@/lib/types";
 import type { Contract, Finding, Review, Severity, SignOffStatus } from "@/lib/types";
@@ -269,18 +270,10 @@ export function ReviewView({ reviewId, onChanged }: { reviewId: string; onChange
           {showReport ? "Show findings" : "Show full report"}
         </Button>
         <CopyButton text={review.markdown} label="Copy report" />
-        {contract && (
-          <a
-            href={`/api/contracts/${contract.id}/file`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 text-[12.5px] font-medium transition hover:bg-sunken"
-          >
-            <Icon name="external" className="size-3.5" />
-            Open the PDF
-          </a>
-        )}
       </div>
+
+      {/* The document itself, so a quote can be checked against the page. */}
+      {contract && <PdfPreview contractId={contract.id} filename={contract.filename} />}
 
       {showReport ? (
         <Card>
