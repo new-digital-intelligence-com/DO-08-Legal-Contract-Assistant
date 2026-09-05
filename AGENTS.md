@@ -27,14 +27,14 @@ never tells anybody a contract is fine to sign.
   for drafting, policy questions, the playbook or the audit trail — those either
   live in the skills or are backend records. Adding a tab is a product decision,
   not a refactor.
-- **The skill** (`plugins/do-08-contract-review/skills/contract-review/`) — one
+- **The skill** (`plugins/do-08-contract-review/skills/do-08-legal-contract-assistant/`) — one
   self-contained Agent Skill covering review, drafting and policy questions. It
   reads a PDF attached in Claude and works there, with no server, no key and no
   connector. Everything it needs is in its own reference files.
 
 They are independent. Neither calls the other. The house playbook exists in both
 (`src/lib/standards.ts` seeds and
-`skills/contract-review/references/playbook.md`) and the two must be changed
+`skills/do-08-legal-contract-assistant/references/playbook.md`) and the two must be changed
 together — that duplication is deliberate, because the skill has to work with
 nothing running, but it is the one place this repo can drift.
 
