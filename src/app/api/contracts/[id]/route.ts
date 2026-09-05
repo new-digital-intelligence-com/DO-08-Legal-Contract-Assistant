@@ -1,6 +1,5 @@
 import { getContract, removeContract } from "@/lib/contracts";
 import { listReviews } from "@/lib/review";
-import { driveConfigured, fileState } from "@/lib/drive";
 import { bad, body, failed, ok, requireNote } from "@/lib/http";
 import { reviewer } from "@/lib/settings";
 
@@ -12,14 +11,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const contract = await getContract(id);
     if (!contract) return bad(`No contract with id ${id}.`, 404);
 
-    // Checked on every read rather than cached: somebody can trash the file
-    // from the Drive UI at any moment, and this app is not told. A stale
-    // "present" is exactly the answer that leaves a person unable to find a
-    // document the console is showing them.
-    const input =
-      contract.input && driveConfigured() ? await fileState(contract.input.fileId) : undefined;
-
-    return ok({ contract, reviews: await listReviews({ contractId: id }), input });
+    // No file-presence check here any more: `getContract` reconciles against
+    // input/ first, so a contract that reaches this line has a file in the
+    // folder by construction. One less Drive round trip per page load.
+    return ok({ contract, reviews: await listReviews({ contractId: id }) });
   } catch (error) {
     return failed(error, "The contract could not be read.");
   }

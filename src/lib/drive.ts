@@ -340,41 +340,6 @@ export async function probeFolder(): Promise<
   }
 }
 
-/**
- * What has actually become of a file the register points at.
- *
- * The register stores a `DriveRef` and then trusts it forever, and that trust
- * is misplaced for a reason nothing in this app controls: the workspace folder
- * is a normal Drive folder that people can open, and a file in it can be
- * trashed, renamed or moved from the Drive UI at any time. None of that goes
- * through this app, so nothing here finds out.
- *
- * The failure it produces is quietly confusing rather than loud. A trashed file
- * still downloads perfectly well by id, so a review keeps working — while the
- * person looking at `input/` in Drive cannot find the document the console is
- * showing them, and has no way to tell whether the app or their eyes are wrong.
- *
- * So this asks, and reports `trashed` separately from `missing`. They need
- * different things done about them: a trashed file can be restored from Drive's
- * own trash, a missing one has to be uploaded again.
- */
-export type FileState =
-  | { state: "present"; name: string }
-  | { state: "trashed"; name: string }
-  | { state: "missing"; reason: string };
-
-export async function fileState(fileId: string): Promise<FileState> {
-  try {
-    const response = await call(`/files/${fileId}?fields=id,name,trashed&supportsAllDrives=true`);
-    const file = (await response.json()) as { name: string; trashed?: boolean };
-    return file.trashed
-      ? { state: "trashed", name: file.name }
-      : { state: "present", name: file.name };
-  } catch (error) {
-    return { state: "missing", reason: error instanceof Error ? error.message : String(error) };
-  }
-}
-
 /** Every non-trashed child of a folder, paged to the end. */
 export async function listFolder(folderId: string): Promise<DriveFile[]> {
   const files: DriveFile[] = [];

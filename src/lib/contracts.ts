@@ -1,8 +1,16 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { record } from "./audit";
+import { record, recordMany } from "./audit";
 import { PDF_LIMITS, MODEL, modelConfigured } from "./anthropic";
-import { driveConfigured, driveEnv, driveStatus, trashFile, workspace } from "./drive";
+import {
+  downloadFile,
+  driveConfigured,
+  driveEnv,
+  driveStatus,
+  listFolder,
+  trashFile,
+  workspace,
+} from "./drive";
 import { fileInput } from "./outputs";
 import { getContractFile, mutate, newId, readStore, writeStore } from "./store";
 import { reviewer } from "./settings";
@@ -180,17 +188,123 @@ export async function ingest(
  * Reading the register
  * ────────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Reconcile the register against what is actually in `input/`, and return it.
+ *
+ * **The folder is the source of truth for which contracts exist.** Not the
+ * register — the register is an index of what has been learned about them.
+ *
+ * That distinction was wrong before and it produced exactly the failure it
+ * sounds like. A file trashed from the Drive UI stayed in `contracts.json`
+ * forever, so the console listed two contracts while the folder held one, and
+ * nothing anywhere explained the difference. A person looking at both had no
+ * way to tell which was lying. Whatever this app believes, the folder is what
+ * somebody can open, share and hand to a lawyer, so the folder wins.
+ *
+ * Reconciling both ways:
+ *
+ * - A register row whose file is **no longer in the folder** is dropped. The
+ *   document is gone; continuing to list it is the lie.
+ * - A file in the folder with **no register row** is adopted — hashed, counted
+ *   and added, so a PDF dropped straight into `input/` shows up here ready to
+ *   review. That is what makes the folder genuinely the source rather than just
+ *   a veto.
+ *
+ * The reviews of a dropped contract are deliberately left alone. They record
+ * work a person did and possibly signed off, and deleting that because somebody
+ * tidied a folder would destroy the audit this product exists to keep.
+ */
+async function reconcile(): Promise<Contract[]> {
+  const rows = await readStore<Contract[]>(COLLECTION, []);
+  if (!driveConfigured()) return rows;
+
+  const folders = await workspace();
+
+  // Throws on a Drive failure rather than returning an empty list, so a
+  // transient outage can never be read as "the folder is empty" and prune the
+  // whole register.
+  const present = (await listFolder(folders.inputId)).filter(
+    (file) => file.mimeType === "application/pdf",
+  );
+  const byFileId = new Map(present.map((file) => [file.id, file]));
+
+  const kept = rows.filter((row) => row.input && byFileId.has(row.input.fileId));
+  const dropped = rows.filter((row) => !kept.includes(row));
+
+  const known = new Set(kept.map((row) => row.input!.fileId));
+  const orphans = present.filter((file) => !known.has(file.id));
+
+  const adopted: Contract[] = [];
+  for (const file of orphans) {
+    try {
+      const bytes = await downloadFile(file.id);
+      adopted.push({
+        id: newId("con"),
+        filename: file.name,
+        sha256: sha256(bytes),
+        bytes: bytes.length,
+        mimeType: "application/pdf",
+        pages: countPages(bytes),
+        uploadedAt: file.modifiedTime ?? new Date().toISOString(),
+        uploadedBy: reviewer(),
+        origin: "drive",
+        position: "unknown",
+        status: "uploaded",
+        reviewCount: 0,
+        input: { fileId: file.id, syncedAt: new Date().toISOString() },
+      });
+    } catch (error) {
+      // One unreadable file must not stop the folder being listed.
+      console.warn(`[contracts] could not adopt ${file.name} from input/:`, error);
+    }
+  }
+
+  if (dropped.length === 0 && adopted.length === 0) return kept;
+
+  const next = [...adopted, ...kept].sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt));
+  await writeStore(COLLECTION, next);
+
+  await recordMany([
+    ...dropped.map((row) => ({
+      actor: reviewer(),
+      action: "contract.gone",
+      subject: row.id,
+      detail:
+        `${row.filename} is no longer in the workspace folder's input/, so it has been dropped ` +
+        `from the register. Its reviews are kept. Nothing in this app moved the file.`,
+    })),
+    ...adopted.map((row) => ({
+      actor: reviewer(),
+      action: "contract.adopted",
+      subject: row.id,
+      detail:
+        `${row.filename} (${(row.bytes / 1024).toFixed(0)} KB) was found in input/ without a ` +
+        `register row and has been added. Nobody has said which party we are, so it needs a ` +
+        `position before it can be reviewed.`,
+    })),
+  ]);
+
+  return next;
+}
+
 export async function listContracts(filter?: {
   status?: ContractStatus;
   limit?: number;
 }): Promise<Contract[]> {
-  const all = await readStore<Contract[]>(COLLECTION, []);
+  const all = await reconcile();
   const matched = filter?.status ? all.filter((c) => c.status === filter.status) : all;
   return filter?.limit ? matched.slice(0, filter.limit) : matched;
 }
 
+/**
+ * One contract — and only if its file is still in the folder.
+ *
+ * Deliberately goes through the same reconciliation as the list. A contract
+ * that has vanished from `input/` has to be gone from its own page too, or the
+ * link on a stale tab would still open a document nobody can find.
+ */
 export async function getContract(id: string): Promise<Contract | undefined> {
-  return (await readStore<Contract[]>(COLLECTION, [])).find((contract) => contract.id === id);
+  return (await reconcile()).find((contract) => contract.id === id);
 }
 
 export async function readContractBytes(id: string): Promise<Buffer> {
@@ -301,8 +415,11 @@ export async function removeContract(id: string, actor: string, note: string): P
  * connector and the skills all name the same document.
  */
 export async function workspaceStatus(): Promise<WorkspaceStatus> {
+  // `reconcile()` rather than a raw read: the counts on screen have to be
+  // counts of what is actually in the folder, or the summary and the list
+  // disagree and neither can be trusted.
   const [contracts, reviews, standards] = await Promise.all([
-    readStore<Contract[]>(COLLECTION, []),
+    reconcile(),
     readStore<Review[]>("reviews", []),
     readStore<unknown[]>("standards", []),
   ]);
