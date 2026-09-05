@@ -80,6 +80,11 @@ export function ReviewCard({
                   />
                 ) : contract.status === "failed" ? (
                   <Badge tone="crit" label="review failed" dot />
+                ) : contract.status === "reviewing" ? (
+                  // Left in `reviewing` with no review to show for it: the run
+                  // was cut off. Saying "not reviewed" would hide that a review
+                  // was attempted, and hide that there is something to redo.
+                  <Badge tone="warn" label="review interrupted" dot />
                 ) : (
                   <Badge tone="neutral" label="not reviewed" dot />
                 )}
@@ -166,6 +171,14 @@ export function ReviewCard({
 
           {contract.status === "failed" && (
             <p className="mt-2 text-[12.5px] text-crit-ink">{contract.error}</p>
+          )}
+
+          {!review && contract.status !== "failed" && (
+            <p className="mt-2 text-[12.5px] text-ink-3">
+              {contract.status === "reviewing"
+                ? "The run was interrupted and nothing was saved. Open it to start again."
+                : "Open it to run the review."}
+            </p>
           )}
 
           {featured && (

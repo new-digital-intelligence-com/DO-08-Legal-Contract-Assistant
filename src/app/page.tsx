@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { Button, Empty, ErrorNote, Loading, Note } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { UploadContract } from "@/components/UploadContract";
@@ -30,7 +29,6 @@ type StatusPayload = {
 };
 
 export default function Console() {
-  const router = useRouter();
   const status = useApi<StatusPayload>("/api/status");
 
   const connected = Boolean(status.data?.workspace);
@@ -111,12 +109,14 @@ export default function Console() {
           {/* ── Upload ─────────────────────────────────────────────────── */}
           <section>
             <h2 className="mb-3 text-[15px] font-semibold">Upload a contract</h2>
-            <UploadContract
-              onDone={refresh}
-              // Straight to the finished review — the person who just waited
-              // three minutes for it should not have to go and find it.
-              onReviewed={(contractId) => router.push(`/contract/${contractId}`)}
-            />
+            {/*
+              * No navigation on completion. The person is watching the stage
+              * list run; sending them to another screen the moment it finishes
+              * takes away the thing they were watching and the summary they
+              * were waiting for. The card below fills in instead, and they
+              * click through when they are ready.
+              */}
+            <UploadContract onDone={refresh} onReviewed={refresh} />
           </section>
 
           {/* ── The last one through ───────────────────────────────────── */}

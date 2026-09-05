@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Badge, Empty, ErrorNote, Loading } from "@/components/ui";
+import { Badge, Empty, ErrorNote, Loading, Note } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { ReviewView } from "@/components/Review";
+import { RunReview } from "@/components/RunReview";
 import { useApi, when } from "@/components/api";
 import { POSITIONS } from "@/lib/types";
 import type { Contract, Review } from "@/lib/types";
@@ -64,20 +65,64 @@ export default function ContractPage() {
       {detail.error && <ErrorNote>The contract could not be read: {detail.error}</ErrorNote>}
 
       {contract && contract.status === "failed" && (
-        <ErrorNote>
-          <strong>The review of {contract.filename} failed.</strong> {contract.error}
-          <p className="mt-2">
-            This contract has not been reviewed. That is not the same as a review that found
-            nothing.
-          </p>
-        </ErrorNote>
+        <div className="mb-4 space-y-3">
+          <ErrorNote>
+            <strong>The last review of {contract.filename} failed.</strong> {contract.error}
+            <p className="mt-2">
+              This contract has not been reviewed. That is not the same as a review that found
+              nothing.
+            </p>
+          </ErrorNote>
+          <RunReview
+            contractId={contract.id}
+            position={contract.position}
+            label="Try the review again"
+            onDone={detail.reload}
+          />
+        </div>
       )}
 
-      {contract && !contract.latestReviewId && contract.status !== "failed" && (
-        <Empty
-          title="This contract has not been reviewed yet."
-          hint="Uploading files the document; reviewing is a separate step."
-        />
+      {/*
+        * A contract left in `reviewing` with nothing to show for it.
+        *
+        * This happens for real: the server restarted, the tab was closed, or
+        * the model call was cut off mid-run. Nothing resets the flag, so the
+        * row sits there forever. It used to render as "not reviewed yet" with
+        * no explanation and no way out — the only escape was to upload the
+        * same file again. Say what actually happened, and offer the button.
+        */}
+      {contract && !contract.latestReviewId && contract.status === "reviewing" && (
+        <div className="mb-4 space-y-3">
+          <Note>
+            <strong>A review was started but never finished.</strong>
+            <p className="mt-2">
+              The run was interrupted — most often the server restarting, or the browser tab being
+              closed while it was working. Nothing was saved, so this contract has not been
+              reviewed. Start it again below.
+            </p>
+          </Note>
+          <RunReview
+            contractId={contract.id}
+            position={contract.position}
+            label="Run the review"
+            onDone={detail.reload}
+          />
+        </div>
+      )}
+
+      {contract && !contract.latestReviewId && contract.status === "uploaded" && (
+        <div className="mb-4 space-y-3">
+          <Empty
+            title="This contract has not been reviewed yet."
+            hint="The file is filed on Drive. Reviewing is a separate step and takes a minute or two."
+          />
+          <RunReview
+            contractId={contract.id}
+            position={contract.position}
+            label="Run the review"
+            onDone={detail.reload}
+          />
+        </div>
       )}
 
       {contract?.latestReviewId && (
@@ -93,6 +138,22 @@ export default function ContractPage() {
           )}
 
           <ReviewView reviewId={contract.latestReviewId} onChanged={detail.reload} />
+
+          {/* Re-running is a normal act, not an error path: the position is
+              routinely got wrong on the first pass, and every run is kept so a
+              correction shows as two reviews that disagree. */}
+          <div className="mt-6 border-t border-border pt-5">
+            <p className="mb-2 text-[13px] font-semibold">Review it again</p>
+            <p className="mb-3 text-[12.5px] text-ink-3">
+              Useful if the side of the table was wrong. The previous review is kept.
+            </p>
+            <RunReview
+              contractId={contract.id}
+              position={contract.position}
+              label="Run a new review"
+              onDone={detail.reload}
+            />
+          </div>
         </>
       )}
     </div>

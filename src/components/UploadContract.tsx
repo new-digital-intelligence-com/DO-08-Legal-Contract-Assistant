@@ -4,8 +4,9 @@ import { useCallback, useRef, useState } from "react";
 import { Button, Card, ErrorNote, Field, InfoNote, inputClass } from "./ui";
 import { Icon } from "./icons";
 import { request } from "./api";
+import { REVIEW_STEPS, Stage, foldStep, runReview } from "./RunReview";
 import { CONTRACT_TYPES, POSITIONS } from "@/lib/types";
-import type { ContractType, Position, ReviewProgress, ReviewStep } from "@/lib/types";
+import type { ContractType, Position, ReviewProgress } from "@/lib/types";
 
 /**
  * Upload, then review each file one at a time, showing every stage as it lands.
@@ -47,32 +48,6 @@ type FileState = {
   steps: ReviewProgress[];
 };
 
-const STEP_COUNT: ReviewStep[] = ["fetching", "intake", "risk", "standards", "report", "filing"];
-
-function seconds(ms: number): string {
-  return `${Math.round(ms / 1000)}s`;
-}
-
-/** One stage line: a tick when finished, a spinner while it is the current one. */
-function Stage({ event, running }: { event: ReviewProgress; running: boolean }) {
-  return (
-    <li className="flex items-start gap-2">
-      <span className="mt-[3px] shrink-0">
-        {running ? (
-          <span className="block size-3 animate-spin rounded-full border-[1.5px] border-ink-3 border-t-transparent" />
-        ) : (
-          <Icon name="check" className="size-3.5 text-ok-ink" />
-        )}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className={running ? "text-ink" : "text-ink-2"}>{event.label}</span>
-        {event.detail && <span className="block text-ink-3">{event.detail}</span>}
-      </span>
-      <span className="tnum shrink-0 text-[11px] text-ink-3">{seconds(event.elapsedMs)}</span>
-    </li>
-  );
-}
-
 export function UploadContract({
   onDone,
   onReviewed,
@@ -106,79 +81,6 @@ export function UploadContract({
       current.map((entry) => (entry.filename === filename ? change(entry) : entry)),
     );
   }, []);
-
-  /**
-   * Read the review stream, folding each event into that file's stage list.
-   *
-   * A repeated step replaces its earlier entry rather than appending, so
-   * "Reviewing as the customer" becomes "Reviewing as the customer — 8 critical,
-   * 3 important" in place instead of listing the stage twice.
-   */
-  async function streamReview(contract: Accepted, chosenPosition: Position) {
-    const response = await fetch(`/api/contracts/${contract.id}/review`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ position: chosenPosition }),
-    });
-
-    if (!response.ok || !response.body) {
-      const text = await response.text().catch(() => "");
-      let message = `The review failed (${response.status}).`;
-      try {
-        message = (JSON.parse(text) as { error?: string }).error ?? message;
-      } catch {
-        /* not JSON — keep the status message */
-      }
-      throw new Error(message);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let failure: string | undefined;
-
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const chunks = buffer.split("\n\n");
-      // The last chunk may be a partial event; keep it for the next read.
-      buffer = chunks.pop() ?? "";
-
-      for (const chunk of chunks) {
-        const line = chunk.split("\n").find((entry) => entry.startsWith("data: "));
-        if (!line) continue;
-
-        let event: ReviewProgress;
-        try {
-          event = JSON.parse(line.slice(6)) as ReviewProgress;
-        } catch {
-          continue;
-        }
-
-        if (event.step === "failed") {
-          failure = event.error ?? "The review failed.";
-          continue;
-        }
-        if (event.step === "done") {
-          patch(contract.filename, (entry) => ({ ...entry, state: "done", detail: event.detail }));
-          onReviewed?.(contract.id);
-          continue;
-        }
-
-        patch(contract.filename, (entry) => {
-          const steps = [...entry.steps];
-          const at = steps.findIndex((step) => step.step === event.step);
-          if (at === -1) steps.push(event);
-          else steps[at] = event;
-          return { ...entry, steps };
-        });
-      }
-    }
-
-    if (failure) throw new Error(failure);
-  }
 
   async function submit() {
     if (files.length === 0) {
@@ -231,7 +133,25 @@ export function UploadContract({
       for (const contract of uploaded.contracts) {
         patch(contract.filename, (entry) => ({ ...entry, state: "reviewing" }));
         try {
-          await streamReview(contract, position);
+          await runReview(contract.id, {
+            position,
+            onEvent: (event) => {
+              if (event.step === "done") {
+                patch(contract.filename, (entry) => ({
+                  ...entry,
+                  state: "done",
+                  detail: event.detail,
+                }));
+                onReviewed?.(contract.id);
+                return;
+              }
+              if (event.step === "failed") return;
+              patch(contract.filename, (entry) => ({
+                ...entry,
+                steps: foldStep(entry.steps, event),
+              }));
+            },
+          });
         } catch (caught) {
           patch(contract.filename, (entry) => ({
             ...entry,
@@ -384,7 +304,7 @@ export function UploadContract({
                       {entry.state === "uploading" && "uploading to Drive"}
                       {entry.state === "queued" && "waiting to review"}
                       {entry.state === "reviewing" &&
-                        `reviewing — step ${Math.min(complete + 1, STEP_COUNT.length)} of ${STEP_COUNT.length}`}
+                        `reviewing — step ${Math.min(complete + 1, REVIEW_STEPS.length)} of ${REVIEW_STEPS.length}`}
                       {entry.state === "done" && "reviewed"}
                       {entry.state === "failed" && "failed"}
                     </span>
