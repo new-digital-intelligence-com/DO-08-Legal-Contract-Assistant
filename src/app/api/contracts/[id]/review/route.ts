@@ -6,7 +6,7 @@ import { reviewer } from "@/lib/settings";
 import type { ContractType, Position, ReviewProgress } from "@/lib/types";
 
 export const runtime = "nodejs";
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 /**
  * Run the three-pass review over one contract, reporting each stage as it goes.
