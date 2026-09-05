@@ -34,7 +34,7 @@ Restart the session afterwards — skills are bound when a session starts.
 
 ### What you get
 
-One skill, `contract-review`, covering three things:
+One skill, `do-08-legal-contract-assistant`, covering three things:
 
 | Ask | What it does |
 |---|---|
@@ -93,7 +93,7 @@ open.
 The two hold separate copies of the house positions, and they have different
 jobs. The console's copy is editable at runtime and is what its reviews are
 judged against. The plugin's copy at
-`skills/contract-review/references/playbook.md` is what the skills read.
+`skills/do-08-legal-contract-assistant/references/playbook.md` is what the skill reads.
 
 Change a position in the console, and update that file too, or the two surfaces
 will quietly answer the same question differently.

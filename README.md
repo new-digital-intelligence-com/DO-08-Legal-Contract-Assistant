@@ -33,7 +33,7 @@ Draft a mutual NDA, three-year term, Delaware law.
 What's our position on uncapped indemnities?
 ```
 
-One skill ships in the plugin — `contract-review` — covering three things:
+One skill ships in the plugin — `do-08-legal-contract-assistant` — covering three things:
 
 | Ask | What it does |
 |---|---|

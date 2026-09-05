@@ -1,5 +1,5 @@
 ---
-name: contract-review
+name: do-08-legal-contract-assistant
 description: Review, draft or redline a contract, and answer questions about this organisation's contracting positions. Use whenever someone attaches or pastes an agreement — NDA, SaaS, MSA, DPA, employment, consulting, merchant, purchase or broker — and wants it checked; asks what the risks, red flags or non-standard clauses are; asks about a specific provision such as the liability cap, indemnity, termination, auto-renewal, data export or non-compete; asks how a term compares to market; wants replacement language, a fallback position or a counter-proposal; wants an agreement drafted from a brief; or asks what our position is on a clause and whether a document complies with our standards. Reads the document you attach and reports with the clause reference and the quoted text. It proposes; a lawyer decides.
 ---
 
