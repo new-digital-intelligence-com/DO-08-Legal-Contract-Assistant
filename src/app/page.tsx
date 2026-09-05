@@ -1,23 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useState } from "react";
-import { Badge, Button, Card, Empty, ErrorNote, Loading, Note } from "@/components/ui";
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { Button, Empty, ErrorNote, Loading, Note } from "@/components/ui";
 import { Icon } from "@/components/icons";
 import { UploadContract } from "@/components/UploadContract";
-import { ReviewView } from "@/components/Review";
-import { useApi, when } from "@/components/api";
-import type { Contract, ContractStatus, WorkspaceStatus } from "@/lib/types";
+import { ReviewCard } from "@/components/ReviewCard";
+import { useApi } from "@/components/api";
+import type { Contract, Review, WorkspaceStatus } from "@/lib/types";
 
 /**
- * The whole console: upload a contract, read the review, pick a previous one.
+ * Upload a contract, see the last one at a glance, click through for the rest.
  *
- * There is no navigation because there is nowhere else to go. Everything this
- * app does for a person happens on this page, and a rail with one destination
- * on it is furniture.
+ * No navigation, because there is nowhere else to go — the only other screen is
+ * one contract's review, and that is reached by clicking the contract.
  *
- * The selected contract lives in the hash, so a review can be linked to and
- * survives a reload — somebody told to "look at the Helix cap" lands on it.
+ * The reviews are fetched whole rather than through a summary endpoint. At this
+ * volume that is the right trade: one request instead of two, and the cards can
+ * show the actual finding titles rather than counts alone. If a workspace ever
+ * holds hundreds of contracts this becomes the thing to fix.
  */
 
 type StatusPayload = {
@@ -27,38 +29,29 @@ type StatusPayload = {
   config: { org: string; model: { configured: boolean } };
 };
 
-const STATUS_TONE: Record<ContractStatus, "ok" | "warn" | "crit" | "neutral"> = {
-  reviewed: "ok",
-  reviewing: "warn",
-  uploaded: "neutral",
-  failed: "crit",
-};
-
 export default function Console() {
+  const router = useRouter();
   const status = useApi<StatusPayload>("/api/status");
-  const contracts = useApi<{ contracts: Contract[] }>(
-    status.data?.workspace ? "/api/contracts" : undefined,
-  );
 
-  const [selected, setSelected] = useState<string | undefined>(() =>
-    typeof window === "undefined" ? undefined : window.location.hash.slice(1) || undefined,
-  );
-
-  const select = useCallback((id?: string) => {
-    setSelected(id);
-    window.location.hash = id ?? "";
-  }, []);
+  const connected = Boolean(status.data?.workspace);
+  const contracts = useApi<{ contracts: Contract[] }>(connected ? "/api/contracts" : undefined);
+  const reviews = useApi<{ reviews: Review[] }>(connected ? "/api/reviews?limit=40" : undefined);
 
   const refresh = useCallback(() => {
     status.reload();
     contracts.reload();
-  }, [status, contracts]);
+    reviews.reload();
+  }, [status, contracts, reviews]);
 
   const list = contracts.data?.contracts ?? [];
-  const current = list.find((entry) => entry.id === selected) ?? list[0];
+  const byId = new Map((reviews.data?.reviews ?? []).map((review) => [review.id, review]));
+  const reviewFor = (contract: Contract) =>
+    contract.latestReviewId ? byId.get(contract.latestReviewId) : undefined;
+
+  const [latest, ...previous] = list;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-5 py-8 md:px-8">
+    <div className="mx-auto w-full max-w-3xl px-5 py-8 md:px-8">
       <header className="mb-6 flex items-center gap-3">
         <Image src="/logo.png" alt="" width={30} height={30} className="logo" priority />
         <div>
@@ -105,9 +98,9 @@ export default function Console() {
         </Note>
       )}
 
-      {status.data?.workspace && (
+      {connected && (
         <div className="space-y-8">
-          {!status.data.config.model.configured && (
+          {!status.data?.config.model.configured && (
             <ErrorNote>
               <strong>The Anthropic API key is not set.</strong> Contracts can be uploaded but
               nothing can be reviewed. Add <code>ANTHROPIC_API_KEY</code> to <code>.env.local</code>{" "}
@@ -120,83 +113,44 @@ export default function Console() {
             <h2 className="mb-3 text-[15px] font-semibold">Upload a contract</h2>
             <UploadContract
               onDone={refresh}
-              onReviewed={(contractId) => {
-                refresh();
-                select(contractId);
-              }}
+              // Straight to the finished review — the person who just waited
+              // three minutes for it should not have to go and find it.
+              onReviewed={(contractId) => router.push(`/contract/${contractId}`)}
             />
           </section>
 
-          {/* ── The result ─────────────────────────────────────────────── */}
+          {/* ── The last one through ───────────────────────────────────── */}
           <section>
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-[15px] font-semibold">
-                {current && selected && selected !== list[0]?.id ? "Review" : "Latest review"}
-              </h2>
-              {current && (
-                <span className="text-[12.5px] text-ink-3">
-                  {current.title || current.filename} · uploaded {when(current.uploadedAt)}
-                </span>
-              )}
-            </div>
+            <h2 className="mb-3 text-[15px] font-semibold">Latest review</h2>
 
             {contracts.loading && !contracts.data ? (
-              <Loading rows={4} />
+              <Loading rows={3} />
             ) : contracts.error ? (
               <ErrorNote>{contracts.error}</ErrorNote>
-            ) : !current ? (
+            ) : !latest ? (
               <Empty
                 title="Nothing uploaded yet."
                 hint="Drop a PDF above. The review takes a minute or two and appears here."
               />
-            ) : current.status === "failed" ? (
-              <ErrorNote>
-                <strong>The review of {current.filename} failed.</strong> {current.error}
-                <p className="mt-2">
-                  This contract has not been reviewed. That is not the same as a review that found
-                  nothing.
-                </p>
-              </ErrorNote>
-            ) : !current.latestReviewId ? (
-              <Empty
-                title={`${current.filename} has not been reviewed yet.`}
-                hint="Uploading files the document; reviewing is a separate step."
-              />
             ) : (
-              <ReviewView reviewId={current.latestReviewId} onChanged={refresh} />
+              <ReviewCard contract={latest} review={reviewFor(latest)} featured />
             )}
           </section>
 
-          {/* ── Previous ───────────────────────────────────────────────── */}
-          {list.length > 1 && (
+          {/* ── Everything before it ───────────────────────────────────── */}
+          {previous.length > 0 && (
             <section>
-              <h2 className="mb-3 text-[15px] font-semibold">Previous contracts</h2>
+              <h2 className="mb-3 text-[15px] font-semibold">
+                Previous contracts ({previous.length})
+              </h2>
               <div className="space-y-2">
-                {list.map((entry) => {
-                  const isCurrent = entry.id === current?.id;
-                  return (
-                    <Card key={entry.id} padded={false}>
-                      <button
-                        type="button"
-                        onClick={() => select(entry.id)}
-                        className={`flex w-full items-center justify-between gap-3 p-3 text-left transition ${
-                          isCurrent ? "bg-sunken" : "hover:bg-sunken"
-                        }`}
-                      >
-                        <div className="min-w-0">
-                          <div className="truncate text-[13px] font-medium">
-                            {entry.title || entry.filename}
-                          </div>
-                          <div className="truncate text-[11.5px] text-ink-3">
-                            {entry.counterparty ? `${entry.counterparty} · ` : ""}
-                            we are the {entry.position} · {when(entry.uploadedAt)}
-                          </div>
-                        </div>
-                        <Badge tone={STATUS_TONE[entry.status]} label={entry.status} dot />
-                      </button>
-                    </Card>
-                  );
-                })}
+                {previous.map((contract) => (
+                  <ReviewCard
+                    key={contract.id}
+                    contract={contract}
+                    review={reviewFor(contract)}
+                  />
+                ))}
               </div>
             </section>
           )}

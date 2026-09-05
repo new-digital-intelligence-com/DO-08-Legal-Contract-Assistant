@@ -108,8 +108,6 @@ export const BUDGET = {
    */
   reviewTokens: 48_000,
   standardsTokens: 12_000,
-  draftTokens: 24_000,
-  answerTokens: 8_000,
 };
 
 /**
